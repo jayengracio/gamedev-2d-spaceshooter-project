@@ -71,7 +71,10 @@ public class GameObject {
 
 		return blankTexture;
 	}
-  
+
+	public void setTexture(String texture) {
+		textureLocation = texture;
+	}
 }
 
 /*

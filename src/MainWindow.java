@@ -2,6 +2,7 @@ import util.UnitTests;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,10 +38,10 @@ SOFTWARE.
 
 
 public class MainWindow {
-    private static final JFrame frame = new JFrame("Game");   // Change to the name of your game
+    private static final JFrame frame = new JFrame("Starfighter 22");   // Change to the name of your game
     private static final Model gameWorld = new Model();
     private static final Viewer canvas = new Viewer(gameWorld);
-    private static final int TargetFPS = 100;
+    private static final int TargetFPS = 230;
     private static boolean startGame = false;
     private final KeyListener Controller = new Controller();
     private JLabel BackgroundImageForStartMenu;
@@ -54,7 +55,15 @@ public class MainWindow {
         canvas.setBackground(new Color(255, 255, 255)); //white background  replaced by Space background but if you remove the background method this will draw a white screen
         canvas.setVisible(false);   // this will become visible after you press the key.
 
+
         JButton startMenuButton = new JButton("Start Game");  // start button
+/*        JPanel scorePanel = new JPanel();
+        scorePanel.setPreferredSize(new Dimension(300, 30));
+        JLabel scoreBoard = new JLabel("Score: 1");
+        scoreBoard.setFont(new Font("Verdana", Font.PLAIN, 20));
+        scorePanel.add(scoreBoard);
+        canvas.add(scorePanel);*/
+
         startMenuButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -67,6 +76,8 @@ public class MainWindow {
             }
         });
         startMenuButton.setBounds(400, 500, 200, 40);
+
+
 
         //loading background image
         File BackgroundToLoad = new File("res/startscreen.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
@@ -114,14 +125,13 @@ public class MainWindow {
 
         // model update
         gameWorld.gamelogic();
-        // view update
 
-        canvas.updateview();
+        // view update
+        canvas.updateView();
 
         // Both these calls could be setup as  a thread but we want to simplify the game logic for you.
         //score update
         frame.setTitle("Score =  " + gameWorld.getScore());
-
 
     }
 }

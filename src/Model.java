@@ -2,7 +2,9 @@ import util.GameObject;
 import util.Point3f;
 import util.Vector3f;
 
+import java.sql.Time;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 /*
  * Created by Abraham Campbell on 15/01/2020.
@@ -38,7 +40,7 @@ public class Model {
     public Model() {
         //setup game world
         //Player
-        Player = new GameObject("res/Lightning.png", 50, 50, new Point3f(500, 500, 0));
+        Player = new GameObject("res/player.png", 67, 50, new Point3f(500, 500, 0));
         //Enemies  starting with four
 
         EnemiesList.add(new GameObject("res/UFO.png", 50, 50, new Point3f(((float) Math.random() * 50 + 400), 0, 0)));
@@ -80,7 +82,7 @@ public class Model {
         // TODO Auto-generated method stub
         for (GameObject temp : EnemiesList) {
             // Move enemies
-            temp.getCentre().ApplyVector(new Vector3f(0, -1, 0));
+            temp.getCentre().ApplyVector(new Vector3f(0, (float) -0.5, 0));
 
             //see if they get to the top of the screen ( remember 0 is the top
             // current boundary need to pass value to model
@@ -99,15 +101,14 @@ public class Model {
     }
 
     private void bulletLogic() {
-        // TODO Auto-generated method stub
         // move bullets
 
         for (GameObject temp : BulletList) {
+
             //check to move them
+            temp.getCentre().ApplyVector(new Vector3f(0, 2, 0));
 
-            temp.getCentre().ApplyVector(new Vector3f(0, 1, 0));
             //see if they hit anything
-
             //see if they get to the top of the screen ( remember 0 is the top
             if (temp.getCentre().getY() == 0) {
                 BulletList.remove(temp);
@@ -121,19 +122,23 @@ public class Model {
 
         //check for movement and if you fired a bullet
         if (Controller.getInstance().isKeyAPressed()) {
-            Player.getCentre().ApplyVector(new Vector3f(-2, 0, 0));
+            Player.setTexture("res/playerLeft.png");
+            Player.getCentre().ApplyVector(new Vector3f((float) -1.3, 0, 0));
         }
 
         if (Controller.getInstance().isKeyDPressed()) {
-            Player.getCentre().ApplyVector(new Vector3f(2, 0, 0));
+            Player.setTexture("res/playerRight.png");
+            Player.getCentre().ApplyVector(new Vector3f((float) 1.3, 0, 0));
         }
 
         if (Controller.getInstance().isKeyWPressed()) {
-            Player.getCentre().ApplyVector(new Vector3f(0, 2, 0));
+            Player.setTexture("res/player.png");
+            Player.getCentre().ApplyVector(new Vector3f(0, (float) 1.3, 0));
         }
 
         if (Controller.getInstance().isKeySPressed()) {
-            Player.getCentre().ApplyVector(new Vector3f(0, -2, 0));
+            Player.setTexture("res/player.png");
+            Player.getCentre().ApplyVector(new Vector3f(0, (float) -1.3, 0));
         }
 
         if (Controller.getInstance().isKeySpacePressed()) {
@@ -143,7 +148,7 @@ public class Model {
     }
 
     private void CreateBullet() {
-        BulletList.add(new GameObject("res/Bullet.png", 32, 64, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
+        BulletList.add(new GameObject("res/laserGreen.png", 9, 33, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
     }
 
     public GameObject getPlayer() {

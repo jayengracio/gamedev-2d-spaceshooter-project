@@ -50,14 +50,14 @@ public class Controller implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyChar()) {
+            case 'w':
+                setKeyWPressed(true);
+                break;
             case 'a':
                 setKeyAPressed(true);
                 break;
             case 's':
                 setKeySPressed(true);
-                break;
-            case 'w':
-                setKeyWPressed(true);
                 break;
             case 'd':
                 setKeyDPressed(true);
@@ -75,14 +75,14 @@ public class Controller implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyChar()) {
+            case 'w':
+                setKeyWPressed(false);
+                break;
             case 'a':
                 setKeyAPressed(false);
                 break;
             case 's':
                 setKeySPressed(false);
-                break;
-            case 'w':
-                setKeyWPressed(false);
                 break;
             case 'd':
                 setKeyDPressed(false);
