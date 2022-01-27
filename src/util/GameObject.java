@@ -29,9 +29,9 @@ public class GameObject {
 	private int width=10;
 	private int height=10;
 	private boolean hasTextured=false;
-	private String textureLocation; 
-	private String blanktexture="res/blankSprite.png";
-	
+	private String textureLocation;
+	private String blankTexture ="res/blankSprite.png";
+
 	public GameObject() {  
 		
 	}
@@ -68,8 +68,8 @@ public class GameObject {
 			{
 			return textureLocation;
 			}
-		 
-		return blanktexture; 
+
+		return blankTexture;
 	}
   
 }
