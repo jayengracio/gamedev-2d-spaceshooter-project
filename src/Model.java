@@ -3,6 +3,7 @@ import util.Point3f;
 import util.Vector3f;
 
 import java.sql.Time;
+import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -40,13 +41,13 @@ public class Model {
     public Model() {
         //setup game world
         //Player
-        Player = new GameObject("res/player.png", 67, 50, new Point3f(500, 500, 0));
+        Player = new GameObject("res/playerShip_Orange.png", 67, 50, new Point3f(500, 500, 0));
         //Enemies  starting with four
 
-        EnemiesList.add(new GameObject("res/UFO.png", 50, 50, new Point3f(((float) Math.random() * 50 + 400), 0, 0)));
-        EnemiesList.add(new GameObject("res/UFO.png", 50, 50, new Point3f(((float) Math.random() * 50 + 500), 0, 0)));
-        EnemiesList.add(new GameObject("res/UFO.png", 50, 50, new Point3f(((float) Math.random() * 100 + 500), 0, 0)));
-        EnemiesList.add(new GameObject("res/UFO.png", 50, 50, new Point3f(((float) Math.random() * 100 + 400), 0, 0)));
+        EnemiesList.add(new GameObject("res/enemyBlack1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0)));
+        EnemiesList.add(new GameObject("res/enemyBlack2.png", 60, 45, new Point3f(((float) Math.random() * 50 + 500), 0, 0)));
+        EnemiesList.add(new GameObject("res/enemyBlack3.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0)));
+        EnemiesList.add(new GameObject("res/enemyBlack4.png", 60, 45, new Point3f(((float) Math.random() * 100 + 400), 0, 0)));
     }
 
     // This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.
@@ -95,7 +96,13 @@ public class Model {
 
         if (EnemiesList.size() < 2) {
             while (EnemiesList.size() < 6) {
-                EnemiesList.add(new GameObject("res/UFO.png", 50, 50, new Point3f(((float) Math.random() * 1000), 0, 0)));
+                Random random = new Random();
+                int max = 5;
+                int min = 1;
+                int rand = random.nextInt(max - min + 1) + min;
+                String texture = "res/enemyBlack" + rand + ".png";
+                //EnemiesList.add(new GameObject("res/meteor.png", 70, 50, new Point3f(((float) Math.random() * 1000), 0, 0)));
+                EnemiesList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
             }
         }
     }
@@ -122,22 +129,22 @@ public class Model {
 
         //check for movement and if you fired a bullet
         if (Controller.getInstance().isKeyAPressed()) {
-            Player.setTexture("res/playerLeft.png");
+            //Player.setTexture("res/playerLeft.png");
             Player.getCentre().ApplyVector(new Vector3f((float) -1.3, 0, 0));
         }
 
         if (Controller.getInstance().isKeyDPressed()) {
-            Player.setTexture("res/playerRight.png");
+            //Player.setTexture("res/playerRight.png");
             Player.getCentre().ApplyVector(new Vector3f((float) 1.3, 0, 0));
         }
 
         if (Controller.getInstance().isKeyWPressed()) {
-            Player.setTexture("res/player.png");
+            //Player.setTexture("res/player.png");
             Player.getCentre().ApplyVector(new Vector3f(0, (float) 1.3, 0));
         }
 
         if (Controller.getInstance().isKeySPressed()) {
-            Player.setTexture("res/player.png");
+            //Player.setTexture("res/player.png");
             Player.getCentre().ApplyVector(new Vector3f(0, (float) -1.3, 0));
         }
 

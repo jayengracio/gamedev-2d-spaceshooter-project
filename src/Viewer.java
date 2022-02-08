@@ -95,7 +95,8 @@ public class Viewer extends JPanel {
             //The spirte is 32x32 pixel wide and 4 of them are placed together so we need to grab a different one each time
             //remember your training :-) computer science everything starts at 0 so 32 pixels gets us to 31
             int currentPositionInAnimation = ((int) (CurrentAnimationTime % 4) * 32); //slows down animation so every 10 frames we get another frame so every 100ms
-            g.drawImage(myImage, x, y, x + width, y + height, currentPositionInAnimation, 0, currentPositionInAnimation + 31, 32, null);
+            //g.drawImage(myImage, x, y, x + width, y + height, currentPositionInAnimation, 0, currentPositionInAnimation + 31, 32, null);
+            g.drawImage(myImage, x, y, x + width, y + height, 0, 0, 104, 84, null);
 
         } catch (IOException e) {
             e.printStackTrace();
