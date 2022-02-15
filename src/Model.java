@@ -1,11 +1,11 @@
-import util.GameObject;
-import util.Point3f;
-import util.Vector3f;
+import entity.Enemy;
+import entity.Player;
+import util.*;
 
-import java.sql.Time;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 
 /*
  * Created by Abraham Campbell on 15/01/2020.
@@ -32,22 +32,31 @@ SOFTWARE.
    (MIT LICENSE ) e.g do what you want with this :-) 
  */
 public class Model {
-    private final GameObject Player;
+    private final Player Player;
     private final Controller controller = Controller.getInstance();
-    private final CopyOnWriteArrayList<GameObject> EnemiesList = new CopyOnWriteArrayList<GameObject>();
-    private final CopyOnWriteArrayList<GameObject> BulletList = new CopyOnWriteArrayList<GameObject>();
+    private final CopyOnWriteArrayList<Enemy> EnemiesList = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<GameObject> BulletList = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<GameObject> HazardList = new CopyOnWriteArrayList<>();
+    private final long createdMillis = System.currentTimeMillis();
     private int Score = 0;
 
     public Model() {
-        //setup game world
-        //Player
-        Player = new GameObject("res/playerShip_Orange.png", 67, 50, new Point3f(500, 500, 0));
-        //Enemies  starting with four
+        // Setup game world
+        //Player = new GameObject("res/playerShip_Orange.png", 67, 50, new Point3f(500, 500, 0));
+        Player = new Player("res/playerShip_Orange.png", 67, 50, new Point3f(500, 500, 0), 5, 0, 15);
 
-        EnemiesList.add(new GameObject("res/enemyBlack1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0)));
+        /* EnemiesList.add(new GameObject("res/enemyBlack1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0)));
         EnemiesList.add(new GameObject("res/enemyBlack2.png", 60, 45, new Point3f(((float) Math.random() * 50 + 500), 0, 0)));
-        EnemiesList.add(new GameObject("res/enemyBlack3.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0)));
-        EnemiesList.add(new GameObject("res/enemyBlack4.png", 60, 45, new Point3f(((float) Math.random() * 100 + 400), 0, 0)));
+        EnemiesList.add(new GameObject("res/enemyBlack3.png", 60, 45, new Point3f(((float) Math.random() * 150 + 600), 0, 0)));
+        EnemiesList.add(new GameObject("res/enemyBlack4.png", 60, 45, new Point3f(((float) Math.random() * 200 + 700), 0, 0)));*/
+
+        EnemiesList.add(new Enemy("res/enemyBlack1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0), 3, 1));
+        EnemiesList.add(new Enemy("res/enemyBlack2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0), 3, 1));
+        EnemiesList.add(new Enemy("res/enemyBlack3.png", 60, 45, new Point3f(((float) Math.random() * 150 + 600), 0, 0), 3, 1));
+        EnemiesList.add(new Enemy("res/enemyBlack4.png", 60, 45, new Point3f(((float) Math.random() * 200 + 700), 0, 0), 3, 1));
+
+        HazardList.add(new GameObject("res/meteor_1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0)));
+        HazardList.add(new GameObject("res/meteor_2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0)));
     }
 
     // This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.
@@ -60,6 +69,8 @@ public class Model {
         bulletLogic();
         // interactions between objects
         gameLogic();
+        //
+        environmentHazardLogic();
 
     }
 
@@ -67,25 +78,81 @@ public class Model {
         // this is a way to increment across the array list data structure
         // see if they hit anything
         // using enhanced for-loop style as it makes it alot easier both code wise and reading wise too
-        for (GameObject temp : EnemiesList) {
+        for (Enemy temp : EnemiesList) {
             for (GameObject Bullet : BulletList) {
                 if (Math.abs(temp.getCentre().getX() - Bullet.getCentre().getX()) < temp.getWidth()
                         && Math.abs(temp.getCentre().getY() - Bullet.getCentre().getY()) < temp.getHeight()) {
-                    EnemiesList.remove(temp);
                     BulletList.remove(Bullet);
-                    Score++;
+                    String textureId = temp.getTexture().substring(temp.getTexture().length()-5);
+                    temp.setTexture("res/enemyRed"+textureId);
+                    temp.setHealth(temp.getHealth()-1);
+                    Timer timer = new Timer();
+                    ShowDamage damage = new ShowDamage(temp, "res/enemyBlack"+textureId);
+                    timer.schedule(damage, 300, 300);
+                    if (temp.getHealth() == 0) {
+                        EnemiesList.remove(temp);
+                        Score++;
+                    }
+                }
+            }
+        }
+
+        for (GameObject temp : HazardList) {
+            for (GameObject Bullet : BulletList) {
+                if (Math.abs(temp.getCentre().getX() - Bullet.getCentre().getX()) < temp.getWidth()
+                        && Math.abs(temp.getCentre().getY() - Bullet.getCentre().getY()) < temp.getHeight()) {
+                    HazardList.remove(temp);
+                    BulletList.remove(Bullet);
                 }
             }
         }
     }
 
-    private void enemyLogic() {
-        // TODO Auto-generated method stub
-        for (GameObject temp : EnemiesList) {
+    private void environmentHazardLogic() {
+        Random random = new Random();
+        long timeElapse = (System.currentTimeMillis() - createdMillis) / 3000;
+        for (GameObject temp : HazardList) {
             // Move enemies
             temp.getCentre().ApplyVector(new Vector3f(0, (float) -0.5, 0));
 
             //see if they get to the top of the screen ( remember 0 is the top
+            // current boundary need to pass value to model
+            if (temp.getCentre().getY() == 900.0f) {
+                HazardList.remove(temp);
+            }
+        }
+
+        if (HazardList.size() < 1) {
+            while (HazardList.size() < 4) {
+                int max = 5;
+                int min = 1;
+                int rand = random.nextInt(max - min + 1) + min;
+                String texture = "res/meteor_" + rand + ".png";
+                //EnemiesList.add(new GameObject("res/meteor.png", 70, 50, new Point3f(((float) Math.random() * 1000), 0, 0)));
+                HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
+            }
+        }
+    }
+    private void enemyLogic() {
+        Random random = new Random();
+        int randy = 0;
+        long timeElapse = (System.currentTimeMillis() - createdMillis) / 3000;
+        for (GameObject temp : EnemiesList) {
+            // Move enemies
+            //temp.getCentre().ApplyVector(new Vector3f(0, (float) -0.5, 0));
+            if (timeElapse % 2 == 0) {
+                temp.getCentre().ApplyVector(new Vector3f((float) -0.5, (float) -0.3, 0));
+            } else {
+                temp.getCentre().ApplyVector(new Vector3f((float) 0.5, (float) -0.3, 0));
+            }
+
+            if (temp.getCentre().getX() == 0.0f) {
+                temp.getCentre().setX(900);
+            } else if (temp.getCentre().getX() == 900.0f) {
+                temp.getCentre().setX(0);
+            }
+
+                //see if they get to the top of the screen ( remember 0 is the top
             // current boundary need to pass value to model
             if (temp.getCentre().getY() == 900.0f) {
                 EnemiesList.remove(temp);
@@ -96,20 +163,18 @@ public class Model {
 
         if (EnemiesList.size() < 2) {
             while (EnemiesList.size() < 6) {
-                Random random = new Random();
                 int max = 5;
                 int min = 1;
                 int rand = random.nextInt(max - min + 1) + min;
                 String texture = "res/enemyBlack" + rand + ".png";
                 //EnemiesList.add(new GameObject("res/meteor.png", 70, 50, new Point3f(((float) Math.random() * 1000), 0, 0)));
-                EnemiesList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
+                EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 3, 1));
             }
         }
     }
 
     private void bulletLogic() {
         // move bullets
-
         for (GameObject temp : BulletList) {
 
             //check to move them
@@ -125,6 +190,7 @@ public class Model {
     }
 
     private void playerLogic() {
+        boolean reloading = false;
         // smoother animation is possible if we make a target position  // done but may try to change things for students
 
         //check for movement and if you fired a bullet
@@ -134,22 +200,30 @@ public class Model {
         }
 
         if (Controller.getInstance().isKeyDPressed()) {
-            //Player.setTexture("res/playerRight.png");
             Player.getCentre().ApplyVector(new Vector3f((float) 1.3, 0, 0));
         }
 
         if (Controller.getInstance().isKeyWPressed()) {
-            //Player.setTexture("res/player.png");
             Player.getCentre().ApplyVector(new Vector3f(0, (float) 1.3, 0));
         }
 
         if (Controller.getInstance().isKeySPressed()) {
-            //Player.setTexture("res/player.png");
             Player.getCentre().ApplyVector(new Vector3f(0, (float) -1.3, 0));
         }
 
         if (Controller.getInstance().isKeySpacePressed()) {
-            CreateBullet();
+            if (Player.getAmmo() == 0) {
+                Player.setAmmo(-1);
+                Timer timer = new Timer();
+                ReloadAmmo reload = new ReloadAmmo(Player, 15);
+                timer.schedule(reload, 1000, 1000);
+            } else if (Player.getAmmo() == -1) {
+                // do nothing, this stops timer scheduling overloading by numerous button presses
+            } else {
+                CreateBullet();
+                Player.setAmmo(Player.getAmmo()-1);
+            }
+
             Controller.getInstance().setKeySpacePressed(false);
         }
     }
@@ -158,12 +232,16 @@ public class Model {
         BulletList.add(new GameObject("res/laserGreen.png", 9, 33, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
     }
 
-    public GameObject getPlayer() {
+    public Player getPlayer() {
         return Player;
     }
 
-    public CopyOnWriteArrayList<GameObject> getEnemies() {
+    public CopyOnWriteArrayList<Enemy> getEnemies() {
         return EnemiesList;
+    }
+
+    public CopyOnWriteArrayList<GameObject> getHazards() {
+        return HazardList;
     }
 
     public CopyOnWriteArrayList<GameObject> getBullets() {

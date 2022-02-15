@@ -1,6 +1,8 @@
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.LayoutManager;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.io.File;
 import java.io.IOException;
 
@@ -86,6 +88,12 @@ public class Viewer extends JPanel {
             drawEnemies((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g);
 
         });
+
+        //Draw Enemies
+        gameWorld.getHazards().forEach((temp) -> {
+            drawHazards((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g);
+
+        });
     }
 
     private void drawEnemies(int x, int y, int width, int height, String texture, Graphics g) {
@@ -101,7 +109,19 @@ public class Viewer extends JPanel {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    private void drawHazards(int x, int y, int width, int height, String texture, Graphics g) {
+        File TextureToLoad = new File(texture);  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
+        try {
+            Image myImage = ImageIO.read(TextureToLoad);
+            //The spirte is 32x32 pixel wide and 4 of them are placed together so we need to grab a different one each time
+            //remember your training :-) computer science everything starts at 0 so 32 pixels gets us to 31
+            g.drawImage(myImage, x, y, x + width, y + height, 0, 0, 120, 84, null);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void drawBackground(Graphics g) {

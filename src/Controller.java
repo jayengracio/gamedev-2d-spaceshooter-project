@@ -76,15 +76,19 @@ public class Controller implements KeyListener {
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyChar()) {
             case 'w':
+            case 'W':
                 setKeyWPressed(false);
                 break;
             case 'a':
+            case 'A':
                 setKeyAPressed(false);
                 break;
             case 's':
+            case 'S':
                 setKeySPressed(false);
                 break;
             case 'd':
+            case 'D':
                 setKeyDPressed(false);
                 break;
             case ' ':
