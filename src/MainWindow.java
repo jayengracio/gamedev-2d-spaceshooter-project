@@ -1,14 +1,15 @@
+import sun.applet.Main;
 import util.UnitTests;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /*
  * Created by Abraham Campbell on 15/01/2020.
@@ -38,20 +39,29 @@ SOFTWARE.
 
 public class MainWindow {
     private static final JFrame frame = new JFrame("Starfighter 22");   // Change to the name of your game
-    private static final Model gameWorld = new Model();
+    private static Model gameWorld = new Model("hello");
     private static final Viewer canvas = new Viewer(gameWorld);
+    private static final JPanel scorePanel = new JPanel();
+    private static final JPanel ammoPanel = new JPanel();
+    private static final JPanel lifePanel = new JPanel();
     private static final JLabel score = new JLabel("Score: ");
     private static final JLabel ammo = new JLabel("Ammo: ");
     private static final JLabel life = new JLabel("Lives: ");
+    private static final JPanel gameOver = new JPanel();
     private static final int TargetFPS = 300;
     private static boolean startGame = false;
     private final KeyListener Controller = new Controller();
+    private final KeyListener Controller2 = new Controller2();
     private JLabel BackgroundImageForStartMenu;
 
     public MainWindow() {
         frame.setSize(1000, 1100);  // you can customise this later and adapt it to change on size.
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //If exit // you can modify with your way of quitting , just is a template.
         frame.setLayout(null);
+        frame.add(scorePanel);
+        frame.add(ammoPanel);
+        frame.add(lifePanel);
+        frame.add(gameOver);
         frame.add(canvas);
         canvas.setBounds(0, 35, 1000, 965);
         canvas.setBackground(new Color(255, 255, 255)); //white background  replaced by Space background but if you remove the background method this will draw a white screen
@@ -59,7 +69,6 @@ public class MainWindow {
 
         JButton startMenuButton = new JButton("Start Game");  // start button
 
-        JPanel scorePanel = new JPanel();
         scorePanel.setVisible(false);
         scorePanel.setBounds(485, 0, 115, 35);
         scorePanel.setBackground(Color.black);
@@ -67,7 +76,6 @@ public class MainWindow {
         score.setForeground(Color.white);
         scorePanel.add(score);
 
-        JPanel ammoPanel = new JPanel();
         ammoPanel.setVisible(false);
         ammoPanel.setBounds(111, 0, 110, 35);
         ammoPanel.setBackground(Color.black);
@@ -75,7 +83,6 @@ public class MainWindow {
         ammo.setForeground(Color.white);
         ammoPanel.add(ammo);
 
-        JPanel lifePanel = new JPanel();
         lifePanel.setVisible(false);
         lifePanel.setBounds(0, 0, 110, 35);
         lifePanel.setBackground(Color.black);
@@ -83,26 +90,29 @@ public class MainWindow {
         life.setForeground(Color.white);
         lifePanel.add(life);
 
-        frame.add(scorePanel);
-        frame.add(ammoPanel);
-        frame.add(lifePanel);
+        gameOver.setLayout(new GridBagLayout());
+        gameOver.setVisible(false);
+        gameOver.setBounds(250, 250, 500, 500);
+        gameOver.setBackground(Color.black);
+        JLabel ko = new JLabel("Game Over!");
+        ko.setFont(new Font("Verdana", Font.PLAIN, 20));
+        ko.setForeground(Color.white);
+        ko.setHorizontalAlignment(JLabel.CENTER);
+        gameOver.add(ko);
 
-        startMenuButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                startMenuButton.setVisible(false);
-                BackgroundImageForStartMenu.setVisible(false);
-                canvas.setVisible(true);
-                scorePanel.setVisible(true);
-                ammoPanel.setVisible(true);
-                lifePanel.setVisible(true);
-                canvas.addKeyListener(Controller);    //adding the controller to the Canvas
-                canvas.requestFocusInWindow();   // making sure that the Canvas is in focus so keyboard input will be taking in .
-                startGame = true;
-            }
+        startMenuButton.addActionListener(e -> {
+            startMenuButton.setVisible(false);
+            BackgroundImageForStartMenu.setVisible(false);
+            canvas.setVisible(true);
+            scorePanel.setVisible(true);
+            ammoPanel.setVisible(true);
+            lifePanel.setVisible(true);
+            canvas.addKeyListener(Controller);    //adding the controller to the Canvas
+            canvas.addKeyListener(Controller2);    //adding the controller to the Canvas
+            canvas.requestFocusInWindow();   // making sure that the Canvas is in focus so keyboard input will be taking in .
+            startGame = true;
         });
         startMenuButton.setBounds(400, 500, 200, 40);
-
 
 
         //loading background image
@@ -134,7 +144,22 @@ public class MainWindow {
             }
 
             if (startGame) {
-                gameLoop();
+                if (gameWorld.getPlayer().getLives() == 0) {
+                    gameOver.setVisible(true);
+                    //scorePanel.setVisible(false);
+                    //ammoPanel.setVisible(false);
+                    //lifePanel.setVisible(false);
+                    gameWorld.setGameEnd(true);
+
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                        frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    gameLoop();
+                }
             }
 
             //UNIT test to see if framerate matches

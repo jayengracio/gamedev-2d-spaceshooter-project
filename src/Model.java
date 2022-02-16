@@ -2,9 +2,9 @@ import entity.Enemy;
 import entity.Player;
 import util.*;
 
-import java.io.IOException;
 import java.util.Random;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /*
@@ -36,9 +36,12 @@ public class Model {
     private final Controller controller = Controller.getInstance();
     private final CopyOnWriteArrayList<Enemy> EnemiesList = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<GameObject> BulletList = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<GameObject> EnemyBulletList = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<GameObject> HazardList = new CopyOnWriteArrayList<>();
     private final long createdMillis = System.currentTimeMillis();
     private int Score = 0;
+    boolean gameEnd = false;
+    int i = 0;
 
     public Model() {
         // Setup game world
@@ -51,18 +54,37 @@ public class Model {
         HazardList.add(new GameObject("res/meteor_2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0)));
     }
 
+    public Model(String hello) {
+        Player = new Player("res/playerShip_Orange.png", 67, 50, new Point3f(500, 500, 0), 1, 0, 15);
+
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                ++i;
+                if (!gameEnd) {
+                    CreateEnemyBullet();
+                }
+            }
+        };
+        timer.schedule(task, 2000, 1500);
+    }
+
     // This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.
     public void Logic() {
-        // Player Logic first
-        playerLogic();
-        // Enemy Logic next
-        enemyLogic();
-        // Bullets move next
-        playerBulletLogic();
-        // interactions between objects
-        gameLogic();
-        //
-        hazardLogic();
+        if (!isGameEnd()) {
+            // Player Logic first
+            playerLogic();
+            // Enemy Logic next
+            enemyLogic();
+            // Bullets move next
+            enemyBulletLogic();
+            playerBulletLogic();
+            // interactions between objects
+            gameLogic();
+            //
+            hazardLogic();
+        }
     }
 
     private void gameLogic() {
@@ -102,6 +124,14 @@ public class Model {
                 }
             }
         }
+
+        for (GameObject Bullet : EnemyBulletList) {
+            if (Math.abs(Player.getCentre().getX() - Bullet.getCentre().getX()) < Player.getWidth()
+                    && Math.abs(Player.getCentre().getY() - Bullet.getCentre().getY()) < Player.getHeight()) {
+                EnemyBulletList.remove(Bullet);
+                Player.setLives(Player.getLives()-1);
+            }
+        }
     }
 
     private void hazardLogic() {
@@ -130,7 +160,6 @@ public class Model {
     }
 
     private void enemyLogic() {
-        Random random = new Random();
         long timeElapse = (System.currentTimeMillis() - createdMillis) / 3000;
         for (Enemy temp : EnemiesList) {
             // Move enemy
@@ -155,16 +184,21 @@ public class Model {
             }
         }
 
-        if (EnemiesList.size() < 3) {
-            while (EnemiesList.size() < random.nextInt(6 - 2 + 1) + 2) {
-                int max = 5;
-                int min = 1;
-                int rand = random.nextInt(max - min + 1) + min;
-                String texture = "res/enemyBlack" + rand + ".png";
-                EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 2, 1));
-            }
+        if (EnemiesList.size()< 3) {
+            createEnemy();
         }
     }
+
+    private void createEnemy() {
+        Random random = new Random();
+        int max = 5;
+        int min = 1;
+        int rand = random.nextInt(max - min + 1) + min;
+
+        String texture = "res/enemyBlack" + rand + ".png";
+        //String texture = "res/enemyBlue2.png";
+        EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 2, 1));
+}
 
     private void playerBulletLogic() {
         // move bullets
@@ -179,7 +213,21 @@ public class Model {
                 BulletList.remove(temp);
             }
         }
+    }
 
+    private void enemyBulletLogic() {
+        // move bullets
+        for (GameObject temp : EnemyBulletList) {
+
+            //check to move them
+            temp.getCentre().ApplyVector(new Vector3f(0, -1.5f, 0));
+
+            //see if they hit anything
+            //see if they get to the top of the screen ( remember 0 is the top
+            if (temp.getCentre().getY() == 900) {
+                EnemyBulletList.remove(temp);
+            }
+        }
     }
 
     private void playerLogic() {
@@ -211,17 +259,33 @@ public class Model {
             } else if (Player.getAmmo() == -1) {
                 // do nothing, this stops timer scheduling overloading by numerous button presses
             } else {
+                Random random = new Random();
                 CreateBullet();
                 Player.setAmmo(Player.getAmmo() - 1);
             }
 
             Controller.getInstance().setKeySpacePressed(false);
         }
+
+        if (Player.getCentre().getX() == 0.0f) {
+            Player.getCentre().setX(900);
+        } else if (Player.getCentre().getX() == 900.0f) {
+            Player.getCentre().setX(0);
+        }
     }
 
     private void CreateBullet() {
         BulletList.add(new GameObject("res/laserGreen.png", 9, 33, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
+        //BulletList.add(new GameObject("res/laserBlue.png", 9, 33, new Point3f(Player.getCentre().getX()+60, Player.getCentre().getY(), 0.0f)));
         SoundEffect sfx = new SoundEffect("sfx/sfx_laser1.wav");
+        sfx.playSFX();
+    }
+
+    private void CreateEnemyBullet() {
+        Random random = new Random();
+        Enemy enemy = EnemiesList.get(random.nextInt(EnemiesList.size()));
+        EnemyBulletList.add(new GameObject("res/laserRed.png", 9, 33, new Point3f(enemy.getCentre().getX(), enemy.getCentre().getY(), 0.0f)));
+        SoundEffect sfx = new SoundEffect("sfx/sfx_laser2.wav");
         sfx.playSFX();
     }
 
@@ -241,8 +305,20 @@ public class Model {
         return BulletList;
     }
 
+    public CopyOnWriteArrayList<GameObject> getEnemyBullets() {
+        return EnemyBulletList;
+    }
+
     public int getScore() {
         return Score;
+    }
+
+    public boolean isGameEnd() {
+        return gameEnd;
+    }
+
+    public void setGameEnd(boolean gameEnd) {
+        this.gameEnd = gameEnd;
     }
 }
 
