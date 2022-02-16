@@ -2,7 +2,6 @@ import util.UnitTests;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,7 +40,7 @@ public class MainWindow {
     private static final JFrame frame = new JFrame("Starfighter 22");   // Change to the name of your game
     private static final Model gameWorld = new Model();
     private static final Viewer canvas = new Viewer(gameWorld);
-    private static final int TargetFPS = 230;
+    private static final int TargetFPS = 300;
     private static boolean startGame = false;
     private final KeyListener Controller = new Controller();
     private JLabel BackgroundImageForStartMenu;
@@ -124,7 +123,7 @@ public class MainWindow {
         // So no need to call it explicitly
 
         // model update
-        gameWorld.gamelogic();
+        gameWorld.Logic();
 
         // view update
         canvas.updateView();

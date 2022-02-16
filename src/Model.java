@@ -4,7 +4,6 @@ import util.*;
 
 import java.util.Random;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /*
@@ -42,36 +41,27 @@ public class Model {
 
     public Model() {
         // Setup game world
-        //Player = new GameObject("res/playerShip_Orange.png", 67, 50, new Point3f(500, 500, 0));
         Player = new Player("res/playerShip_Orange.png", 67, 50, new Point3f(500, 500, 0), 5, 0, 15);
-
-        /* EnemiesList.add(new GameObject("res/enemyBlack1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0)));
-        EnemiesList.add(new GameObject("res/enemyBlack2.png", 60, 45, new Point3f(((float) Math.random() * 50 + 500), 0, 0)));
-        EnemiesList.add(new GameObject("res/enemyBlack3.png", 60, 45, new Point3f(((float) Math.random() * 150 + 600), 0, 0)));
-        EnemiesList.add(new GameObject("res/enemyBlack4.png", 60, 45, new Point3f(((float) Math.random() * 200 + 700), 0, 0)));*/
-
         EnemiesList.add(new Enemy("res/enemyBlack1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0), 3, 1));
         EnemiesList.add(new Enemy("res/enemyBlack2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0), 3, 1));
         EnemiesList.add(new Enemy("res/enemyBlack3.png", 60, 45, new Point3f(((float) Math.random() * 150 + 600), 0, 0), 3, 1));
         EnemiesList.add(new Enemy("res/enemyBlack4.png", 60, 45, new Point3f(((float) Math.random() * 200 + 700), 0, 0), 3, 1));
-
         HazardList.add(new GameObject("res/meteor_1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0)));
         HazardList.add(new GameObject("res/meteor_2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0)));
     }
 
     // This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.
-    public void gamelogic() {
+    public void Logic() {
         // Player Logic first
         playerLogic();
         // Enemy Logic next
         enemyLogic();
         // Bullets move next
-        bulletLogic();
+        playerBulletLogic();
         // interactions between objects
         gameLogic();
         //
-        environmentHazardLogic();
-
+        hazardLogic();
     }
 
     private void gameLogic() {
@@ -83,12 +73,15 @@ public class Model {
                 if (Math.abs(temp.getCentre().getX() - Bullet.getCentre().getX()) < temp.getWidth()
                         && Math.abs(temp.getCentre().getY() - Bullet.getCentre().getY()) < temp.getHeight()) {
                     BulletList.remove(Bullet);
-                    String textureId = temp.getTexture().substring(temp.getTexture().length()-5);
-                    temp.setTexture("res/enemyRed"+textureId);
-                    temp.setHealth(temp.getHealth()-1);
+                    temp.setHealth(temp.getHealth() - 1);
+
+                    // show visual damage
+                    String textureId = temp.getTexture().substring(temp.getTexture().length() - 5);
+                    temp.setTexture("res/enemyRed" + textureId);
                     Timer timer = new Timer();
-                    ShowDamage damage = new ShowDamage(temp, "res/enemyBlack"+textureId);
+                    ShowDamage damage = new ShowDamage(temp, "res/enemyBlack" + textureId);
                     timer.schedule(damage, 300, 300);
+
                     if (temp.getHealth() == 0) {
                         EnemiesList.remove(temp);
                         Score++;
@@ -108,7 +101,7 @@ public class Model {
         }
     }
 
-    private void environmentHazardLogic() {
+    private void hazardLogic() {
         Random random = new Random();
         long timeElapse = (System.currentTimeMillis() - createdMillis) / 3000;
         for (GameObject temp : HazardList) {
@@ -128,52 +121,50 @@ public class Model {
                 int min = 1;
                 int rand = random.nextInt(max - min + 1) + min;
                 String texture = "res/meteor_" + rand + ".png";
-                //EnemiesList.add(new GameObject("res/meteor.png", 70, 50, new Point3f(((float) Math.random() * 1000), 0, 0)));
                 HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
             }
         }
     }
+
     private void enemyLogic() {
         Random random = new Random();
-        int randy = 0;
         long timeElapse = (System.currentTimeMillis() - createdMillis) / 3000;
-        for (GameObject temp : EnemiesList) {
-            // Move enemies
-            //temp.getCentre().ApplyVector(new Vector3f(0, (float) -0.5, 0));
+        for (Enemy temp : EnemiesList) {
+            // Move enemy
             if (timeElapse % 2 == 0) {
-                temp.getCentre().ApplyVector(new Vector3f((float) -0.5, (float) -0.3, 0));
+                temp.getCentre().ApplyVector(new Vector3f((float) -0.3, (float) -0.3, 0));
             } else {
-                temp.getCentre().ApplyVector(new Vector3f((float) 0.5, (float) -0.3, 0));
+                temp.getCentre().ApplyVector(new Vector3f((float) 0.3, (float) -0.3, 0));
             }
 
+            // Teleports enemy to opposite border when it hits a border
             if (temp.getCentre().getX() == 0.0f) {
                 temp.getCentre().setX(900);
             } else if (temp.getCentre().getX() == 900.0f) {
                 temp.getCentre().setX(0);
             }
 
-                //see if they get to the top of the screen ( remember 0 is the top
+            //see if they get to the top of the screen ( remember 0 is the top
             // current boundary need to pass value to model
             if (temp.getCentre().getY() == 900.0f) {
                 EnemiesList.remove(temp);
-                // enemies win so score decreased
                 Score--;
             }
         }
 
-        if (EnemiesList.size() < 2) {
+        if (EnemiesList.size() < 3) {
             while (EnemiesList.size() < 6) {
                 int max = 5;
                 int min = 1;
                 int rand = random.nextInt(max - min + 1) + min;
                 String texture = "res/enemyBlack" + rand + ".png";
                 //EnemiesList.add(new GameObject("res/meteor.png", 70, 50, new Point3f(((float) Math.random() * 1000), 0, 0)));
-                EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 3, 1));
+                EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 2, 1));
             }
         }
     }
 
-    private void bulletLogic() {
+    private void playerBulletLogic() {
         // move bullets
         for (GameObject temp : BulletList) {
 
@@ -190,9 +181,7 @@ public class Model {
     }
 
     private void playerLogic() {
-        boolean reloading = false;
         // smoother animation is possible if we make a target position  // done but may try to change things for students
-
         //check for movement and if you fired a bullet
         if (Controller.getInstance().isKeyAPressed()) {
             //Player.setTexture("res/playerLeft.png");
@@ -221,7 +210,7 @@ public class Model {
                 // do nothing, this stops timer scheduling overloading by numerous button presses
             } else {
                 CreateBullet();
-                Player.setAmmo(Player.getAmmo()-1);
+                Player.setAmmo(Player.getAmmo() - 1);
             }
 
             Controller.getInstance().setKeySpacePressed(false);
