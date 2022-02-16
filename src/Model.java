@@ -32,7 +32,7 @@ SOFTWARE.
    (MIT LICENSE ) e.g do what you want with this :-) 
  */
 public class Model {
-    private final Player Player;
+    private Player Player;
     private final Controller controller = Controller.getInstance();
     private final CopyOnWriteArrayList<Enemy> EnemiesList = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<GameObject> BulletList = new CopyOnWriteArrayList<>();
@@ -44,7 +44,7 @@ public class Model {
     int i = 0;
 
     public Model() {
-        Player = new Player("res/player.png", 67, 50, new Point3f(500, 500, 0), 5, 0, 15);
+        Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 5, 0, 15);
         // Setup game world
         EnemiesList.add(new Enemy("res/enemyBlack1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0), 3, 1));
         EnemiesList.add(new Enemy("res/enemyBlack2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0), 3, 1));
@@ -55,7 +55,7 @@ public class Model {
     }
 
     public Model(String hello) {
-        Player = new Player("res/player.png", 67, 50, new Point3f(500, 500, 0), 5, 0, 15);
+        Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 10, 0, 15);
 
         // To stop the timer being started twice, I created another constructor with a redundant argument
         Timer timer = new Timer();
@@ -142,13 +142,13 @@ public class Model {
                 // show visual damage
                 Player.setTexture("res/player_shielded.png");
                 Timer timer = new Timer();
-                //ShowDamage damage = new ShowDamage(Player, "res/player.png");
+                //ShowDamage damage = new ShowDamage(Player, "res/playerShip1.png");
                 TimerTask damage = new TimerTask() {
                     @Override
                     public void run() {
                         i++;
                         if (i >= 6) {
-                            Player.setTexture("res/player.png");
+                            Player.setTexture("res/playerShip1.png");
                             Player.setInvincible(false);
                             i = 0;
                             cancel();
@@ -174,13 +174,13 @@ public class Model {
                 // show visual damage
                 Player.setTexture("res/player_shielded.png");
                 Timer timer = new Timer();
-                //ShowDamage damage = new ShowDamage(Player, "res/player.png");
+                //ShowDamage damage = new ShowDamage(Player, "res/playerShip1.png");
                 TimerTask damage = new TimerTask() {
                     @Override
                     public void run() {
                         i++;
                         if (i >= 6) {
-                            Player.setTexture("res/player.png");
+                            Player.setTexture("res/playerShip1.png");
                             Player.setInvincible(false);
                             i = 0;
                             cancel();
@@ -264,7 +264,11 @@ public class Model {
         for (GameObject temp : BulletList) {
 
             //check to move them
-            temp.getCentre().ApplyVector(new Vector3f(0, 2, 0));
+
+
+            if (Player.getUpgradeLevel() == 2) {
+                temp.getCentre().ApplyVector(new Vector3f(0, 3, 0));
+            } else temp.getCentre().ApplyVector(new Vector3f(0, 2, 0));
 
             //see if they hit anything
             //see if they get to the top of the screen ( remember 0 is the top
@@ -320,7 +324,6 @@ public class Model {
                 CreateBullet();
                 Player.setAmmo(Player.getAmmo() - 1);
             }
-
             Controller.getInstance().setKeySpacePressed(false);
         }
 
@@ -329,11 +332,20 @@ public class Model {
         } else if (Player.getCentre().getX() == 900.0f) {
             Player.getCentre().setX(0);
         }
+
+        if (this.getScore() == 10) {
+            //Point3f pos = Player.getCentre();
+            //Player = new Player("res/playerShip1_agile.png", 75, 50, pos, 8, 2, 20);
+            Player.setUpgradeLevel(2);
+        }
     }
 
     private void CreateBullet() {
         BulletList.add(new GameObject("res/laserGreen.png", 9, 33, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
-        //BulletList.add(new GameObject("res/laserBlue.png", 9, 33, new Point3f(Player.getCentre().getX()+60, Player.getCentre().getY(), 0.0f)));
+
+        if (Player.getUpgradeLevel() == 2)
+        BulletList.add(new GameObject("res/laserBlue.png", 9, 33, new Point3f(Player.getCentre().getX()+60, Player.getCentre().getY(), 0.0f)));
+
         SoundEffect sfx = new SoundEffect("sfx/sfx_laser1.wav");
         sfx.playSFX();
     }

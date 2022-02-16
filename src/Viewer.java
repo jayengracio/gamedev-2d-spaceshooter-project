@@ -161,7 +161,7 @@ public class Viewer extends JPanel {
             //slows down animation so every 10 frames we get another frame so every 100ms
             // int currentPositionInAnimation = ((int) ((CurrentAnimationTime % 40) / 10)) * 32;
             // g.drawImage(myImage, x, y, x + width, y + height, currentPositionInAnimation, 0, currentPositionInAnimation + 31, 32, null);
-            g.drawImage(myImage, x, y, x + width, y + height, 0, 0, 99, 75, null);
+            g.drawImage(myImage, x, y, x + width, y + height, 0, 0, 105, 75, null);
 
         } catch (IOException e) {
             e.printStackTrace();

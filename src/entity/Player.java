@@ -18,8 +18,8 @@ public class Player extends GameObject {
     public Player(String textureLocation, int width, int height, Point3f centre, int health, int upgradeLevel, int ammo) {
         super(textureLocation, width, height, centre);
         this.lives = health;
-        this.upgradeLevel = upgradeLevel;
         this.ammo = ammo;
+        this.upgradeLevel = 1;
     }
 
     public int getLives() {

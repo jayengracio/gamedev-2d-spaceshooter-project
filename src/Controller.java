@@ -34,6 +34,7 @@ public class Controller implements KeyListener {
     private static boolean KeyDPressed = false;
     private static boolean KeyWPressed = false;
     private static boolean KeySpacePressed = false;
+    private static boolean KeyCPressed = false;
 
     public Controller() {
     }
@@ -69,7 +70,12 @@ public class Controller implements KeyListener {
             case ' ':
                 setKeySpacePressed(true);
                 break;
+            case 'c':
+            case 'C':
+                setKeyCPressed(true);
+                break;
             default:
+                //System.out.println("Controller test:  Unknown key pressed");
                 break;
         }
         // You can implement to keep moving while pressing the key here .
@@ -97,7 +103,12 @@ public class Controller implements KeyListener {
             case ' ':
                 setKeySpacePressed(false);
                 break;
+            case 'c':
+            case 'C':
+                setKeyCPressed(false);
+                break;
             default:
+                //System.out.println("Controller test:  Unknown key pressed");
                 break;
         }
         //upper case
@@ -141,6 +152,14 @@ public class Controller implements KeyListener {
 
     public void setKeySpacePressed(boolean keySpacePressed) {
         KeySpacePressed = keySpacePressed;
+    }
+
+    public static boolean isKeyCPressed() {
+        return KeyCPressed;
+    }
+
+    public static void setKeyCPressed(boolean keyCPressed) {
+        KeyCPressed = keyCPressed;
     }
 
 }
