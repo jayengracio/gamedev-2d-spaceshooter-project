@@ -1,4 +1,3 @@
-import sun.applet.Main;
 import util.UnitTests;
 
 import javax.imageio.ImageIO;
@@ -39,7 +38,7 @@ SOFTWARE.
 
 public class MainWindow {
     private static final JFrame frame = new JFrame("Starfighter 22");   // Change to the name of your game
-    private static Model gameWorld = new Model("hello");
+    private static final Model gameWorld = new Model("hello");
     private static final Viewer canvas = new Viewer(gameWorld);
     private static final JPanel scorePanel = new JPanel();
     private static final JPanel ammoPanel = new JPanel();
@@ -55,7 +54,7 @@ public class MainWindow {
     private JLabel BackgroundImageForStartMenu;
 
     public MainWindow() {
-        frame.setSize(1000, 1100);  // you can customise this later and adapt it to change on size.
+        frame.setSize(1000, 1000);  // you can customise this later and adapt it to change on size.
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //If exit // you can modify with your way of quitting , just is a template.
         frame.setLayout(null);
         frame.add(scorePanel);
@@ -116,11 +115,11 @@ public class MainWindow {
 
 
         //loading background image
-        File BackgroundToLoad = new File("res/startscreen.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
+        File BackgroundToLoad = new File("res/space_splash.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
         try {
             BufferedImage myPicture = ImageIO.read(BackgroundToLoad);
             BackgroundImageForStartMenu = new JLabel(new ImageIcon(myPicture));
-            BackgroundImageForStartMenu.setBounds(0, 0, 1000, 1000);
+            BackgroundImageForStartMenu.setBounds(0, 35, 1000, 965);
             frame.add(BackgroundImageForStartMenu);
         } catch (IOException e) {
             e.printStackTrace();
@@ -149,8 +148,7 @@ public class MainWindow {
                     //scorePanel.setVisible(false);
                     //ammoPanel.setVisible(false);
                     //lifePanel.setVisible(false);
-                    gameWorld.setGameEnd(true);
-
+                    gameWorld.setGameStart(true);
                     try {
                         TimeUnit.SECONDS.sleep(5);
                         frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));

@@ -40,12 +40,12 @@ public class Model {
     private final CopyOnWriteArrayList<GameObject> HazardList = new CopyOnWriteArrayList<>();
     private final long createdMillis = System.currentTimeMillis();
     private int Score = 0;
-    boolean gameEnd = false;
+    boolean gameStart = false;
     int i = 0;
 
     public Model() {
+        Player = new Player("res/player.png", 67, 50, new Point3f(500, 500, 0), 5, 0, 15);
         // Setup game world
-        Player = new Player("res/playerShip_Orange.png", 67, 50, new Point3f(500, 500, 0), 5, 0, 15);
         EnemiesList.add(new Enemy("res/enemyBlack1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0), 3, 1));
         EnemiesList.add(new Enemy("res/enemyBlack2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0), 3, 1));
         EnemiesList.add(new Enemy("res/enemyBlack3.png", 60, 45, new Point3f(((float) Math.random() * 150 + 600), 0, 0), 3, 1));
@@ -55,14 +55,15 @@ public class Model {
     }
 
     public Model(String hello) {
-        Player = new Player("res/playerShip_Orange.png", 67, 50, new Point3f(500, 500, 0), 1, 0, 15);
+        Player = new Player("res/player.png", 67, 50, new Point3f(500, 500, 0), 5, 0, 15);
 
+        // To stop the timer being started twice, I created another constructor with a redundant argument
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
                 ++i;
-                if (!gameEnd) {
+                if (!gameStart && EnemiesList.size() > 0) {
                     CreateEnemyBullet();
                 }
             }
@@ -72,7 +73,7 @@ public class Model {
 
     // This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.
     public void Logic() {
-        if (!isGameEnd()) {
+        if (!isGameStart()) {
             // Player Logic first
             playerLogic();
             // Enemy Logic next
@@ -115,6 +116,7 @@ public class Model {
             }
         }
 
+        // Hazard objects collision against bullets
         for (GameObject temp : HazardList) {
             for (GameObject Bullet : BulletList) {
                 if (Math.abs(temp.getCentre().getX() - Bullet.getCentre().getX()) < temp.getWidth()
@@ -125,18 +127,73 @@ public class Model {
             }
         }
 
+        // Hazard objects collision against a player
+        for (GameObject temp : HazardList) {
+            if (Math.abs(temp.getCentre().getX() - Player.getCentre().getX()) < temp.getWidth()
+                    && Math.abs(temp.getCentre().getY() - Player.getCentre().getY()) < temp.getHeight() && !Player.isInvincible()) {
+                HazardList.remove(temp);
+                Player.setLives(Player.getLives() - 1);
+
+                SoundEffect sfx = new SoundEffect("sfx/sfx_lose.wav");
+                sfx.playSFX();
+
+                Player.setInvincible(true);
+
+                // show visual damage
+                Player.setTexture("res/player_shielded.png");
+                Timer timer = new Timer();
+                //ShowDamage damage = new ShowDamage(Player, "res/player.png");
+                TimerTask damage = new TimerTask() {
+                    @Override
+                    public void run() {
+                        i++;
+                        if (i >= 6) {
+                            Player.setTexture("res/player.png");
+                            Player.setInvincible(false);
+                            i = 0;
+                            cancel();
+                        }
+                    }
+                };
+                timer.schedule(damage, 300, 1000);
+            }
+        }
+
+        // Enemy bullets collision against a player
         for (GameObject Bullet : EnemyBulletList) {
             if (Math.abs(Player.getCentre().getX() - Bullet.getCentre().getX()) < Player.getWidth()
-                    && Math.abs(Player.getCentre().getY() - Bullet.getCentre().getY()) < Player.getHeight()) {
+                    && Math.abs(Player.getCentre().getY() - Bullet.getCentre().getY()) < Player.getHeight() && !Player.isInvincible()) {
                 EnemyBulletList.remove(Bullet);
-                Player.setLives(Player.getLives()-1);
+                Player.setLives(Player.getLives() - 1);
+
+                SoundEffect sfx = new SoundEffect("sfx/sfx_lose.wav");
+                sfx.playSFX();
+
+                Player.setInvincible(true);
+
+                // show visual damage
+                Player.setTexture("res/player_shielded.png");
+                Timer timer = new Timer();
+                //ShowDamage damage = new ShowDamage(Player, "res/player.png");
+                TimerTask damage = new TimerTask() {
+                    @Override
+                    public void run() {
+                        i++;
+                        if (i >= 6) {
+                            Player.setTexture("res/player.png");
+                            Player.setInvincible(false);
+                            i = 0;
+                            cancel();
+                        }
+                    }
+                };
+                timer.schedule(damage, 300, 1000);
             }
         }
     }
 
     private void hazardLogic() {
         Random random = new Random();
-        long timeElapse = (System.currentTimeMillis() - createdMillis) / 3000;
         for (GameObject temp : HazardList) {
             // Move enemies
             temp.getCentre().ApplyVector(new Vector3f(0, (float) -0.5, 0));
@@ -184,7 +241,7 @@ public class Model {
             }
         }
 
-        if (EnemiesList.size()< 3) {
+        if (EnemiesList.size() < 3) {
             createEnemy();
         }
     }
@@ -196,9 +253,11 @@ public class Model {
         int rand = random.nextInt(max - min + 1) + min;
 
         String texture = "res/enemyBlack" + rand + ".png";
-        //String texture = "res/enemyBlue2.png";
         EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 2, 1));
-}
+        if (rand > 3) {
+            EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 2, 1));
+        }
+    }
 
     private void playerBulletLogic() {
         // move bullets
@@ -234,7 +293,6 @@ public class Model {
         // smoother animation is possible if we make a target position  // done but may try to change things for students
         //check for movement and if you fired a bullet
         if (Controller.getInstance().isKeyAPressed()) {
-            //Player.setTexture("res/playerLeft.png");
             Player.getCentre().ApplyVector(new Vector3f((float) -1.3, 0, 0));
         }
 
@@ -259,7 +317,6 @@ public class Model {
             } else if (Player.getAmmo() == -1) {
                 // do nothing, this stops timer scheduling overloading by numerous button presses
             } else {
-                Random random = new Random();
                 CreateBullet();
                 Player.setAmmo(Player.getAmmo() - 1);
             }
@@ -313,12 +370,12 @@ public class Model {
         return Score;
     }
 
-    public boolean isGameEnd() {
-        return gameEnd;
+    public boolean isGameStart() {
+        return gameStart;
     }
 
-    public void setGameEnd(boolean gameEnd) {
-        this.gameEnd = gameEnd;
+    public void setGameStart(boolean gameStart) {
+        this.gameStart = gameStart;
     }
 }
 

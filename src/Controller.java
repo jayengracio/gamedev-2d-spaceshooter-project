@@ -70,7 +70,6 @@ public class Controller implements KeyListener {
                 setKeySpacePressed(true);
                 break;
             default:
-                //System.out.println("Controller test:  Unknown key pressed");
                 break;
         }
         // You can implement to keep moving while pressing the key here .
@@ -99,7 +98,6 @@ public class Controller implements KeyListener {
                 setKeySpacePressed(false);
                 break;
             default:
-                //System.out.println("Controller test:  Unknown key pressed");
                 break;
         }
         //upper case
