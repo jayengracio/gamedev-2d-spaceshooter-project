@@ -2,6 +2,7 @@ import entity.Enemy;
 import entity.Player;
 import util.*;
 
+import java.io.IOException;
 import java.util.Random;
 import java.util.Timer;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -84,6 +85,8 @@ public class Model {
 
                     if (temp.getHealth() == 0) {
                         EnemiesList.remove(temp);
+                        SoundEffect sfx = new SoundEffect("sfx/sfx_twoTone.wav");
+                        sfx.playSFX();
                         Score++;
                     }
                 }
@@ -153,12 +156,11 @@ public class Model {
         }
 
         if (EnemiesList.size() < 3) {
-            while (EnemiesList.size() < 6) {
+            while (EnemiesList.size() < random.nextInt(6 - 2 + 1) + 2) {
                 int max = 5;
                 int min = 1;
                 int rand = random.nextInt(max - min + 1) + min;
                 String texture = "res/enemyBlack" + rand + ".png";
-                //EnemiesList.add(new GameObject("res/meteor.png", 70, 50, new Point3f(((float) Math.random() * 1000), 0, 0)));
                 EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 2, 1));
             }
         }
@@ -219,6 +221,8 @@ public class Model {
 
     private void CreateBullet() {
         BulletList.add(new GameObject("res/laserGreen.png", 9, 33, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
+        SoundEffect sfx = new SoundEffect("sfx/sfx_laser1.wav");
+        sfx.playSFX();
     }
 
     public Player getPlayer() {

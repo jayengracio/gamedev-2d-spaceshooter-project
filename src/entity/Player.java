@@ -4,7 +4,7 @@ import util.GameObject;
 import util.Point3f;
 
 public class Player extends GameObject {
-    private int health;
+    private int lives;
     private int upgradeLevel;
     private int ammo;
 
@@ -12,17 +12,17 @@ public class Player extends GameObject {
 
     public Player(String textureLocation, int width, int height, Point3f centre, int health, int upgradeLevel, int ammo) {
         super(textureLocation, width, height, centre);
-        this.health = health;
+        this.lives = health;
         this.upgradeLevel = upgradeLevel;
         this.ammo = ammo;
     }
 
-    public int getHealth() {
-        return health;
+    public int getLives() {
+        return lives;
     }
 
-    public void setHealth(int health) {
-        this.health = health;
+    public void setLives(int lives) {
+        this.lives = lives;
     }
 
     public int getUpgradeLevel() {

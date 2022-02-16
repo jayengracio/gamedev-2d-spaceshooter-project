@@ -40,28 +40,52 @@ public class MainWindow {
     private static final JFrame frame = new JFrame("Starfighter 22");   // Change to the name of your game
     private static final Model gameWorld = new Model();
     private static final Viewer canvas = new Viewer(gameWorld);
+    private static final JLabel score = new JLabel("Score: ");
+    private static final JLabel ammo = new JLabel("Ammo: ");
+    private static final JLabel life = new JLabel("Lives: ");
     private static final int TargetFPS = 300;
     private static boolean startGame = false;
     private final KeyListener Controller = new Controller();
     private JLabel BackgroundImageForStartMenu;
 
     public MainWindow() {
-        frame.setSize(1000, 1000);  // you can customise this later and adapt it to change on size.
+        frame.setSize(1000, 1100);  // you can customise this later and adapt it to change on size.
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //If exit // you can modify with your way of quitting , just is a template.
         frame.setLayout(null);
         frame.add(canvas);
-        canvas.setBounds(0, 0, 1000, 1000);
+        canvas.setBounds(0, 35, 1000, 965);
         canvas.setBackground(new Color(255, 255, 255)); //white background  replaced by Space background but if you remove the background method this will draw a white screen
         canvas.setVisible(false);   // this will become visible after you press the key.
 
-
         JButton startMenuButton = new JButton("Start Game");  // start button
-/*        JPanel scorePanel = new JPanel();
-        scorePanel.setPreferredSize(new Dimension(300, 30));
-        JLabel scoreBoard = new JLabel("Score: 1");
-        scoreBoard.setFont(new Font("Verdana", Font.PLAIN, 20));
-        scorePanel.add(scoreBoard);
-        canvas.add(scorePanel);*/
+
+        JPanel scorePanel = new JPanel();
+        scorePanel.setVisible(false);
+        scorePanel.setBounds(485, 0, 115, 35);
+        scorePanel.setBackground(Color.black);
+        score.setFont(new Font("Verdana", Font.PLAIN, 20));
+        score.setForeground(Color.white);
+        scorePanel.add(score);
+
+        JPanel ammoPanel = new JPanel();
+        ammoPanel.setVisible(false);
+        ammoPanel.setBounds(111, 0, 110, 35);
+        ammoPanel.setBackground(Color.black);
+        ammo.setFont(new Font("Verdana", Font.PLAIN, 20));
+        ammo.setForeground(Color.white);
+        ammoPanel.add(ammo);
+
+        JPanel lifePanel = new JPanel();
+        lifePanel.setVisible(false);
+        lifePanel.setBounds(0, 0, 110, 35);
+        lifePanel.setBackground(Color.black);
+        life.setFont(new Font("Verdana", Font.PLAIN, 20));
+        life.setForeground(Color.white);
+        lifePanel.add(life);
+
+        frame.add(scorePanel);
+        frame.add(ammoPanel);
+        frame.add(lifePanel);
 
         startMenuButton.addActionListener(new ActionListener() {
             @Override
@@ -69,6 +93,9 @@ public class MainWindow {
                 startMenuButton.setVisible(false);
                 BackgroundImageForStartMenu.setVisible(false);
                 canvas.setVisible(true);
+                scorePanel.setVisible(true);
+                ammoPanel.setVisible(true);
+                lifePanel.setVisible(true);
                 canvas.addKeyListener(Controller);    //adding the controller to the Canvas
                 canvas.requestFocusInWindow();   // making sure that the Canvas is in focus so keyboard input will be taking in .
                 startGame = true;
@@ -107,7 +134,7 @@ public class MainWindow {
             }
 
             if (startGame) {
-                gameloop();
+                gameLoop();
             }
 
             //UNIT test to see if framerate matches
@@ -116,7 +143,7 @@ public class MainWindow {
     }
 
     //Basic Model-View-Controller pattern
-    private static void gameloop() {
+    private static void gameLoop() {
         // GAMELOOP
 
         // controller input  will happen on its own thread
@@ -130,8 +157,17 @@ public class MainWindow {
 
         // Both these calls could be setup as  a thread but we want to simplify the game logic for you.
         //score update
-        frame.setTitle("Score =  " + gameWorld.getScore() + " " + "Ammo = " + gameWorld.getPlayer().getAmmo());
+        //frame.setTitle("Score =  " + gameWorld.getScore() + " " + "Ammo = " + gameWorld.getPlayer().getAmmo());
+        score.setText("Score: " + gameWorld.getScore());
+        life.setText("Lives: " + gameWorld.getPlayer().getLives());
 
+        if (gameWorld.getPlayer().getAmmo() == -1) {
+            ammo.setForeground(Color.red);
+            ammo.setText("Ammo: R!");
+        } else {
+            ammo.setForeground(Color.white);
+            ammo.setText("Ammo: " + gameWorld.getPlayer().getAmmo());
+        }
     }
 }
 
