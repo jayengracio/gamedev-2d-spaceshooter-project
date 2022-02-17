@@ -58,8 +58,8 @@ public class Model {
     }
 
     public Model(String hello) {
-        Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 10, 0, 6);
-        Player2 = new Player("res/playerShip_Orange.png", 67, 50, new Point3f(200, 500, 0), 10, 0, 6);
+        Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 4, 0, 6);
+        Player2 = new Player("res/playerShip_Orange.png", 67, 50, new Point3f(200, 500, 0), 4, 0, 6);
 
         // To stop the timer being started twice, I created another constructor with a redundant argument
         Timer timer = new Timer();
@@ -226,10 +226,12 @@ public class Model {
     }
 
     private void playerLogic() {
-        gLogic.playerLogic(this, Player, controller, BulletList);
-        gLogic.playerBulletLogic(BulletList, Player);
+        if (!Player.isDead()) {
+            gLogic.playerLogic(this, Player, controller, BulletList);
+            gLogic.playerBulletLogic(BulletList, Player);
+        }
 
-        if (isMultiplayerMode()) {
+        if (isMultiplayerMode() && !Player2.isDead()) {
             gLogic.playerLogic(this, Player2, controller2, BulletList);
             gLogic.playerBulletLogic(BulletList, Player2);
         }

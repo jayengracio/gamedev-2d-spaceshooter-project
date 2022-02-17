@@ -10,68 +10,72 @@ public class ModelPlayerLogic {
 
     // Hazard/environmental objects collision against a player
     public void hazardCollision(CopyOnWriteArrayList<GameObject> HazardList, Player Player) {
-        for (GameObject temp : HazardList) {
-            if (Math.abs(temp.getCentre().getX() - Player.getCentre().getX()) < temp.getWidth()
-                    && Math.abs(temp.getCentre().getY() - Player.getCentre().getY()) < temp.getHeight() && !Player.isInvincible()) {
-                HazardList.remove(temp);
-                Player.setLives(Player.getLives() - 1);
+        if (Player.getLives() > 0) {
+            for (GameObject temp : HazardList) {
+                if (Math.abs(temp.getCentre().getX() - Player.getCentre().getX()) < temp.getWidth()
+                        && Math.abs(temp.getCentre().getY() - Player.getCentre().getY()) < temp.getHeight() && !Player.isInvincible()) {
+                    HazardList.remove(temp);
+                    Player.setLives(Player.getLives() - 1);
 
-                SoundEffect sfx = new SoundEffect("sfx/sfx_lose.wav");
-                sfx.playSFX();
+                    SoundEffect sfx = new SoundEffect("sfx/sfx_lose.wav");
+                    sfx.playSFX();
 
-                Player.setInvincible(true);
+                    Player.setInvincible(true);
 
-                // show visual damage
-                Player.setTexture("res/player_shielded.png");
-                Timer timer = new Timer();
-                //ShowDamage damage = new ShowDamage(Player, "res/playerShip1.png");
-                TimerTask damage = new TimerTask() {
-                    @Override
-                    public void run() {
-                        i++;
-                        if (i >= 3) {
-                            Player.setTexture("res/playerShip1.png");
-                            Player.setInvincible(false);
-                            i = 0;
-                            cancel();
+                    // show visual damage
+                    Player.setTexture("res/player_shielded.png");
+                    Timer timer = new Timer();
+                    //ShowDamage damage = new ShowDamage(Player, "res/playerShip1.png");
+                    TimerTask damage = new TimerTask() {
+                        @Override
+                        public void run() {
+                            i++;
+                            if (i >= 3) {
+                                Player.setTexture("res/playerShip1.png");
+                                Player.setInvincible(false);
+                                i = 0;
+                                cancel();
+                            }
                         }
-                    }
-                };
-                timer.schedule(damage, 300, 1000);
+                    };
+                    timer.schedule(damage, 300, 1000);
+                }
             }
         }
     }
 
     // Enemy bullets collision against a player
     public void bulletCollision(CopyOnWriteArrayList<GameObject> EnemyBulletList, Player Player) {
-        for (GameObject Bullet : EnemyBulletList) {
-            if (Math.abs(Player.getCentre().getX() - Bullet.getCentre().getX()) < Player.getWidth()
-                    && Math.abs(Player.getCentre().getY() - Bullet.getCentre().getY()) < Player.getHeight() && !Player.isInvincible()) {
-                EnemyBulletList.remove(Bullet);
-                Player.setLives(Player.getLives() - 1);
+        if (Player.getLives() > 0) {
+            for (GameObject Bullet : EnemyBulletList) {
+                if (Math.abs(Player.getCentre().getX() - Bullet.getCentre().getX()) < Player.getWidth()
+                        && Math.abs(Player.getCentre().getY() - Bullet.getCentre().getY()) < Player.getHeight() && !Player.isInvincible()) {
+                    EnemyBulletList.remove(Bullet);
+                    Player.setLives(Player.getLives() - 1);
 
-                SoundEffect sfx = new SoundEffect("sfx/sfx_lose.wav");
-                sfx.playSFX();
+                    SoundEffect sfx = new SoundEffect("sfx/sfx_lose.wav");
+                    sfx.playSFX();
 
-                Player.setInvincible(true);
+                    Player.setInvincible(true);
 
-                // show visual damage
-                Player.setTexture("res/player_shielded.png");
-                Timer timer = new Timer();
-                //ShowDamage damage = new ShowDamage(Player, "res/playerShip1.png");
-                TimerTask damage = new TimerTask() {
-                    @Override
-                    public void run() {
-                        i++;
-                        if (i >= 3) {
-                            Player.setTexture("res/playerShip1.png");
-                            Player.setInvincible(false);
-                            i = 0;
-                            cancel();
+                    // show visual damage
+                    Player.setTexture("res/player_shielded.png");
+                    Timer timer = new Timer();
+                    //ShowDamage damage = new ShowDamage(Player, "res/playerShip1.png");
+                    TimerTask damage = new TimerTask() {
+                        @Override
+                        public void run() {
+                            i++;
+                            if (i >= 3) {
+                                Player.setTexture("res/playerShip1.png");
+                                Player.setInvincible(false);
+                                i = 0;
+                                cancel();
+                            }
                         }
-                    }
-                };
-                timer.schedule(damage, 300, 1000);
+                    };
+                    timer.schedule(damage, 300, 1000);
+                }
             }
         }
     }
@@ -121,6 +125,10 @@ public class ModelPlayerLogic {
             //Player = new Player("res/playerShip1_agile.png", 75, 50, pos, 8, 2, 20);
             Player.setUpgradeLevel(2);
         }
+
+        if (Player.getLives() <= 0) {
+            Player.setDead(true);
+        }
     }
 
     // Player's bullet logic
@@ -131,7 +139,7 @@ public class ModelPlayerLogic {
             //check to move them
             if (Player.getUpgradeLevel() == 2) {
                 temp.getCentre().ApplyVector(new Vector3f(0, 3, 0));
-            } else temp.getCentre().ApplyVector(new Vector3f(0, 2, 0));
+            } else temp.getCentre().ApplyVector(new Vector3f(0, 2.2f, 0));
 
             //see if they hit anything
             //see if they get to the top of the screen ( remember 0 is the top

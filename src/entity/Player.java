@@ -12,6 +12,7 @@ public class Player extends GameObject {
     private int upgradeLevel;
     private int ammo;
     private boolean invincible;
+    private boolean dead = false;
 
     public Player(){}
 
@@ -52,5 +53,16 @@ public class Player extends GameObject {
 
     public void setInvincible(boolean invincible) {
         this.invincible = invincible;
+    }
+
+    public boolean isDead() {
+        if (!getTexture().equals("res/blankShip.png") && getLives() <= 0) {
+            setTexture("res/blankShip.png");
+        }
+        return dead;
+    }
+
+    public void setDead(boolean dead) {
+        this.dead = dead;
     }
 }

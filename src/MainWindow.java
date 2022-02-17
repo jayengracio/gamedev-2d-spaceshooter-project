@@ -41,8 +41,8 @@ public class MainWindow {
     private static final Model gameWorld = new Model("Hello");
     private static final Viewer canvas = new Viewer(gameWorld);
     private static final JPanel scorePanel = new JPanel();
-    private static final JPanel ammoPanel = new JPanel();
-    private static final JPanel lifePanel = new JPanel();
+    private static final JPanel player1AmmoPanel = new JPanel();
+    private static final JPanel player1LifePanel = new JPanel();
     private static final JLabel score = new JLabel("Score: ");
     private static final JLabel ammo = new JLabel("Ammo: ");
     private static final JLabel life = new JLabel("Lives: ");
@@ -59,8 +59,8 @@ public class MainWindow {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //If exit // you can modify with your way of quitting , just is a template.
         frame.setLayout(null);
         frame.add(scorePanel);
-        frame.add(ammoPanel);
-        frame.add(lifePanel);
+        frame.add(player1AmmoPanel);
+        frame.add(player1LifePanel);
         frame.add(gameOver);
         frame.add(canvas);
 
@@ -85,6 +85,7 @@ public class MainWindow {
         }
 
         frame.setVisible(true);
+        frame.setResizable(false);
     }
 
     public static void main(String[] args) {
@@ -101,9 +102,18 @@ public class MainWindow {
             }
 
             if (startGame) {
-                if (gameWorld.getPlayer().getLives() == 0) {
+                if (gameWorld.getPlayer().getLives() == 0 && !gameWorld.isMultiplayerMode()) {
                     gameOver.setVisible(true);
-                    ;
+                    gameWorld.setGameStart(false);
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                        frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else if (gameWorld.getPlayer().getLives() == 0 && gameWorld.getPlayer2().getLives() == 0
+                        && gameWorld.isMultiplayerMode()) {
+                    gameOver.setVisible(true);
                     gameWorld.setGameStart(false);
                     try {
                         TimeUnit.SECONDS.sleep(5);
@@ -139,8 +149,8 @@ public class MainWindow {
             BackgroundImageForStartMenu.setVisible(false);
             canvas.setVisible(true);
             scorePanel.setVisible(true);
-            ammoPanel.setVisible(true);
-            lifePanel.setVisible(true);
+            player1AmmoPanel.setVisible(true);
+            player1LifePanel.setVisible(true);
             canvas.addKeyListener(Controller);    //adding the controller to the Canvas
             canvas.requestFocusInWindow();   // making sure that the Canvas is in focus so keyboard input will be taking in .
             startGame = true;
@@ -151,8 +161,8 @@ public class MainWindow {
             BackgroundImageForStartMenu.setVisible(false);
             canvas.setVisible(true);
             scorePanel.setVisible(true);
-            ammoPanel.setVisible(true);
-            lifePanel.setVisible(true);
+            player1AmmoPanel.setVisible(true);
+            player1LifePanel.setVisible(true);
             canvas.addKeyListener(Controller);    //adding the controller to the Canvas
             canvas.addKeyListener(Controller2);    //adding the controller to the Canvas
             canvas.requestFocusInWindow();   // making sure that the Canvas is in focus so keyboard input will be taking in .
@@ -172,19 +182,19 @@ public class MainWindow {
         score.setForeground(Color.white);
         scorePanel.add(score);
 
-        ammoPanel.setVisible(false);
-        ammoPanel.setBounds(111, 0, 110, 35);
-        ammoPanel.setBackground(Color.black);
+        player1AmmoPanel.setVisible(false);
+        player1AmmoPanel.setBounds(111, 0, 110, 35);
+        player1AmmoPanel.setBackground(Color.black);
         ammo.setFont(new Font("Verdana", Font.PLAIN, 20));
         ammo.setForeground(Color.white);
-        ammoPanel.add(ammo);
+        player1AmmoPanel.add(ammo);
 
-        lifePanel.setVisible(false);
-        lifePanel.setBounds(0, 0, 110, 35);
-        lifePanel.setBackground(Color.black);
+        player1LifePanel.setVisible(false);
+        player1LifePanel.setBounds(0, 0, 110, 35);
+        player1LifePanel.setBackground(Color.black);
         life.setFont(new Font("Verdana", Font.PLAIN, 20));
         life.setForeground(Color.white);
-        lifePanel.add(life);
+        player1LifePanel.add(life);
 
         gameOver.setLayout(new GridBagLayout());
         gameOver.setVisible(false);
