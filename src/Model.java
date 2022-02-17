@@ -35,11 +35,13 @@ public class Model {
     private Player Player;
     private Player Player2;
     private final Controller controller = Controller.getInstance();
+    private final Controller2 controller2 = Controller2.getInstance();
     private final CopyOnWriteArrayList<Enemy> EnemiesList = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<GameObject> BulletList = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<GameObject> EnemyBulletList = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<GameObject> HazardList = new CopyOnWriteArrayList<>();
     private final long createdMillis = System.currentTimeMillis();
+    private final ModelPlayerLogic gLogic = new ModelPlayerLogic();
     private int Score = 0;
     boolean gameStart = true;
     boolean multiplayerMode = false;
@@ -56,8 +58,8 @@ public class Model {
     }
 
     public Model(String hello) {
-        Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 10, 0, 15);
-        Player2 = new Player("res/playerShip_Orange.png", 67, 50, new Point3f(200, 500, 0), 10, 0, 15);
+        Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 10, 0, 6);
+        Player2 = new Player("res/playerShip_Orange.png", 67, 50, new Point3f(200, 500, 0), 10, 0, 6);
 
         // To stop the timer being started twice, I created another constructor with a redundant argument
         Timer timer = new Timer();
@@ -66,34 +68,29 @@ public class Model {
             public void run() {
                 if (gameStart && EnemiesList.size() > 0) {
                     CreateEnemyBullet();
+                    if (i == 2) {
+                        CreateEnemyBullet();
+                        i = 0;
+                    }
                 }
             }
         };
-        timer.schedule(task, 2000, 1500);
-    }
-
-    public void Setup() {
-
+        timer.schedule(task, 2000, 1000);
     }
 
     // This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.
     public void Logic() {
         if (isGameStart()) {
-            // Player Logic first
+            // Player logic. This includes collision and player bullet detection
             playerLogic();
-            // Enemy Logic next
+            // Enemy logic
             enemyLogic();
-            // Bullets move next
+            // Enemy bullet logic
             enemyBulletLogic();
-            playerBulletLogic();
-            // interactions between objects
+            // Generic interactions between objects
             gameLogic();
-            //
+            // Hazard logic
             hazardLogic();
-
-            if (isMultiplayerMode()) {
-                player2Logic();
-            }
         }
     }
 
@@ -136,68 +133,13 @@ public class Model {
             }
         }
 
-        // Hazard objects collision against a player
-        for (GameObject temp : HazardList) {
-            if (Math.abs(temp.getCentre().getX() - Player.getCentre().getX()) < temp.getWidth()
-                    && Math.abs(temp.getCentre().getY() - Player.getCentre().getY()) < temp.getHeight() && !Player.isInvincible()) {
-                HazardList.remove(temp);
-                Player.setLives(Player.getLives() - 1);
+        gLogic.bulletCollision(EnemyBulletList, Player);
+        gLogic.hazardCollision(HazardList, Player);
 
-                SoundEffect sfx = new SoundEffect("sfx/sfx_lose.wav");
-                sfx.playSFX();
-
-                Player.setInvincible(true);
-
-                // show visual damage
-                Player.setTexture("res/player_shielded.png");
-                Timer timer = new Timer();
-                //ShowDamage damage = new ShowDamage(Player, "res/playerShip1.png");
-                TimerTask damage = new TimerTask() {
-                    @Override
-                    public void run() {
-                        i++;
-                        if (i >= 3) {
-                            Player.setTexture("res/playerShip1.png");
-                            Player.setInvincible(false);
-                            i = 0;
-                            cancel();
-                        }
-                    }
-                };
-                timer.schedule(damage, 300, 1000);
-            }
-        }
-
-        // Enemy bullets collision against a player
-        for (GameObject Bullet : EnemyBulletList) {
-            if (Math.abs(Player.getCentre().getX() - Bullet.getCentre().getX()) < Player.getWidth()
-                    && Math.abs(Player.getCentre().getY() - Bullet.getCentre().getY()) < Player.getHeight() && !Player.isInvincible()) {
-                EnemyBulletList.remove(Bullet);
-                Player.setLives(Player.getLives() - 1);
-
-                SoundEffect sfx = new SoundEffect("sfx/sfx_lose.wav");
-                sfx.playSFX();
-
-                Player.setInvincible(true);
-
-                // show visual damage
-                Player.setTexture("res/player_shielded.png");
-                Timer timer = new Timer();
-                //ShowDamage damage = new ShowDamage(Player, "res/playerShip1.png");
-                TimerTask damage = new TimerTask() {
-                    @Override
-                    public void run() {
-                        i++;
-                        if (i >= 3) {
-                            Player.setTexture("res/playerShip1.png");
-                            Player.setInvincible(false);
-                            i = 0;
-                            cancel();
-                        }
-                    }
-                };
-                timer.schedule(damage, 300, 1000);
-            }
+        // Enable collision for 2nd ship if the game is 2-Player
+        if (isMultiplayerMode()) {
+            gLogic.bulletCollision(EnemyBulletList, Player2);
+            gLogic.hazardCollision(HazardList, Player2);
         }
     }
 
@@ -230,9 +172,9 @@ public class Model {
         for (Enemy temp : EnemiesList) {
             // Move enemy
             if (timeElapse % 2 == 0) {
-                temp.getCentre().ApplyVector(new Vector3f((float) -0.3, (float) -0.3, 0));
+                temp.getCentre().ApplyVector(new Vector3f((float) -0.3, (float) -0.2, 0));
             } else {
-                temp.getCentre().ApplyVector(new Vector3f((float) 0.3, (float) -0.3, 0));
+                temp.getCentre().ApplyVector(new Vector3f((float) 0.3, (float) -0.2, 0));
             }
 
             // Teleports enemy to opposite border when it hits a border
@@ -268,25 +210,6 @@ public class Model {
         }
     }
 
-    private void playerBulletLogic() {
-        // move bullets
-        for (GameObject temp : BulletList) {
-
-            //check to move them
-
-
-            if (Player.getUpgradeLevel() == 2) {
-                temp.getCentre().ApplyVector(new Vector3f(0, 3, 0));
-            } else temp.getCentre().ApplyVector(new Vector3f(0, 2, 0));
-
-            //see if they hit anything
-            //see if they get to the top of the screen ( remember 0 is the top
-            if (temp.getCentre().getY() == 0) {
-                BulletList.remove(temp);
-            }
-        }
-    }
-
     private void enemyBulletLogic() {
         // move bullets
         for (GameObject temp : EnemyBulletList) {
@@ -303,107 +226,13 @@ public class Model {
     }
 
     private void playerLogic() {
-        // smoother animation is possible if we make a target position  // done but may try to change things for students
-        //check for movement and if you fired a bullet
-        if (Controller.getInstance().isKeyAPressed()) {
-            Player.getCentre().ApplyVector(new Vector3f((float) -1.3, 0, 0));
+        gLogic.playerLogic(this, Player, controller, BulletList);
+        gLogic.playerBulletLogic(BulletList, Player);
+
+        if (isMultiplayerMode()) {
+            gLogic.playerLogic(this, Player2, controller2, BulletList);
+            gLogic.playerBulletLogic(BulletList, Player2);
         }
-
-        if (Controller.getInstance().isKeyDPressed()) {
-            Player.getCentre().ApplyVector(new Vector3f((float) 1.3, 0, 0));
-        }
-
-        if (Controller.getInstance().isKeyWPressed()) {
-            Player.getCentre().ApplyVector(new Vector3f(0, (float) 1.3, 0));
-        }
-
-        if (Controller.getInstance().isKeySPressed()) {
-            Player.getCentre().ApplyVector(new Vector3f(0, (float) -1.3, 0));
-        }
-
-        if (Controller.getInstance().isKeySpacePressed()) {
-            if (Player.getAmmo() == 0) {
-                Player.setAmmo(-1);
-                Timer timer = new Timer();
-                ReloadAmmo reload = new ReloadAmmo(Player, 15);
-                timer.schedule(reload, 1000, 1000);
-            } else if (Player.getAmmo() == -1) {
-                // do nothing, this stops timer scheduling overloading by numerous button presses
-            } else {
-                CreateBullet();
-                Player.setAmmo(Player.getAmmo() - 1);
-            }
-            Controller.getInstance().setKeySpacePressed(false);
-        }
-
-        if (Player.getCentre().getX() == 0.0f) {
-            Player.getCentre().setX(900);
-        } else if (Player.getCentre().getX() == 900.0f) {
-            Player.getCentre().setX(0);
-        }
-
-        if (this.getScore() == 10) {
-            //Point3f pos = Player.getCentre();
-            //Player = new Player("res/playerShip1_agile.png", 75, 50, pos, 8, 2, 20);
-            Player.setUpgradeLevel(2);
-        }
-    }
-
-    private void player2Logic() {
-        // smoother animation is possible if we make a target position  // done but may try to change things for students
-        //check for movement and if you fired a bullet
-        if (Controller2.getInstance().isKeyAPressed()) {
-            Player2.getCentre().ApplyVector(new Vector3f((float) -1.3, 0, 0));
-        }
-
-        if (Controller2.getInstance().isKeyDPressed()) {
-            Player2.getCentre().ApplyVector(new Vector3f((float) 1.3, 0, 0));
-        }
-
-        if (Controller2.getInstance().isKeyWPressed()) {
-            Player2.getCentre().ApplyVector(new Vector3f(0, (float) 1.3, 0));
-        }
-
-        if (Controller2.getInstance().isKeySPressed()) {
-            Player2.getCentre().ApplyVector(new Vector3f(0, (float) -1.3, 0));
-        }
-
-        if (Controller2.getInstance().isKeySpacePressed()) {
-            if (Player2.getAmmo() == 0) {
-                Player2.setAmmo(-1);
-                Timer timer = new Timer();
-                ReloadAmmo reload = new ReloadAmmo(Player2, 15);
-                timer.schedule(reload, 1000, 1000);
-            } else if (Player2.getAmmo() == -1) {
-                // do nothing, this stops timer scheduling overloading by numerous button presses
-            } else {
-                CreateBullet();
-                Player2.setAmmo(Player2.getAmmo() - 1);
-            }
-            Controller2.getInstance().setKeySpacePressed(false);
-        }
-
-        if (Player2.getCentre().getX() == 0.0f) {
-            Player2.getCentre().setX(900);
-        } else if (Player2.getCentre().getX() == 900.0f) {
-            Player2.getCentre().setX(0);
-        }
-
-        if (this.getScore() == 10) {
-            //Point3f pos = Player.getCentre();
-            //Player = new Player("res/playerShip1_agile.png", 75, 50, pos, 8, 2, 20);
-            Player2.setUpgradeLevel(2);
-        }
-    }
-
-    private void CreateBullet() {
-        BulletList.add(new GameObject("res/laserGreen.png", 9, 33, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
-
-        if (Player.getUpgradeLevel() == 2)
-            BulletList.add(new GameObject("res/laserBlue.png", 9, 33, new Point3f(Player.getCentre().getX() + 60, Player.getCentre().getY(), 0.0f)));
-
-        SoundEffect sfx = new SoundEffect("sfx/sfx_laser1.wav");
-        sfx.playSFX();
     }
 
     private void CreateEnemyBullet() {

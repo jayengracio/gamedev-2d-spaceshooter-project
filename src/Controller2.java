@@ -27,7 +27,7 @@ SOFTWARE.
  */
 
 //Singeton pattern
-public class Controller2 implements KeyListener {
+public class Controller2 extends Controller {
     private static final Controller2 instance = new Controller2();
     private static boolean KeyAPressed = false;
     private static boolean KeySPressed = false;
