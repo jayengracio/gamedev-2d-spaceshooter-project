@@ -71,11 +71,21 @@ public class Viewer extends JPanel {
         int height = gameWorld.getPlayer().getHeight();
         String texture = gameWorld.getPlayer().getTexture();
 
+        int x2 = (int) gameWorld.getPlayer2().getCentre().getX();
+        int y2 = (int) gameWorld.getPlayer2().getCentre().getY();
+        int width2 = gameWorld.getPlayer2().getWidth();
+        int height2 = gameWorld.getPlayer2().getHeight();
+        String texture2 = gameWorld.getPlayer2().getTexture();
+
         // Draw background
         drawBackground(g);
 
         // Draw player
         drawPlayer(x, y, width, height, texture, g);
+
+        if (gameWorld.isMultiplayerMode()) {
+            drawPlayer(x2, y2, width2, height2, texture2, g);
+        }
 
         // Draw Bullets
         // change back

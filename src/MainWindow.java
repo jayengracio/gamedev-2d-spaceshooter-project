@@ -38,7 +38,7 @@ SOFTWARE.
 
 public class MainWindow {
     private static final JFrame frame = new JFrame("Starfighter 22");   // Change to the name of your game
-    private static final Model gameWorld = new Model("hello");
+    private static final Model gameWorld = new Model("Hello");
     private static final Viewer canvas = new Viewer(gameWorld);
     private static final JPanel scorePanel = new JPanel();
     private static final JPanel ammoPanel = new JPanel();
@@ -49,6 +49,7 @@ public class MainWindow {
     private static final JPanel gameOver = new JPanel();
     private static final int TargetFPS = 300;
     private static boolean startGame = false;
+    private static boolean multiMode = false;
     private final KeyListener Controller = new Controller();
     private final KeyListener Controller2 = new Controller2();
     private JLabel BackgroundImageForStartMenu;
@@ -62,12 +63,108 @@ public class MainWindow {
         frame.add(lifePanel);
         frame.add(gameOver);
         frame.add(canvas);
+
+        JPanel buttonsPanel = setupPlayerButtons();
+        frame.add(buttonsPanel);
+
         canvas.setBounds(0, 35, 1000, 965);
         canvas.setBackground(new Color(255, 255, 255)); //white background  replaced by Space background but if you remove the background method this will draw a white screen
         canvas.setVisible(false);   // this will become visible after you press the key.
 
-        JButton startMenuButton = new JButton("Start Game");  // start button
+        setupUI();
 
+        //loading background image
+        File BackgroundToLoad = new File("res/space_splash.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
+        try {
+            BufferedImage myPicture = ImageIO.read(BackgroundToLoad);
+            BackgroundImageForStartMenu = new JLabel(new ImageIcon(myPicture));
+            BackgroundImageForStartMenu.setBounds(0, 35, 1000, 965);
+            frame.add(BackgroundImageForStartMenu);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        frame.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        MainWindow hello = new MainWindow();  //sets up environment
+
+        //not nice but remember we do just want to keep looping till the end.  // this could be replaced by a thread but again we want to keep things simple
+        while (true) {
+            //swing has timer class to help us time this but I'm writing my own, you can of course use the timer, but I want to set FPS and display it
+            int TimeBetweenFrames = 1000 / TargetFPS;
+            long FrameCheck = System.currentTimeMillis() + (long) TimeBetweenFrames;
+
+            //wait till next time step
+            while (FrameCheck > System.currentTimeMillis()) {
+            }
+
+            if (startGame) {
+                if (gameWorld.getPlayer().getLives() == 0) {
+                    gameOver.setVisible(true);
+                    ;
+                    gameWorld.setGameStart(false);
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                        frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    gameLoop();
+                }
+            }
+
+            //UNIT test to see if framerate matches
+            UnitTests.CheckFrameRate(System.currentTimeMillis(), FrameCheck, TargetFPS);
+        }
+    }
+
+    private JPanel setupPlayerButtons() {
+        Icon icon = new ImageIcon("res/button1Player.png");
+        JButton OnePlayerButton = new JButton(icon);  // start button
+
+        Icon icon2 = new ImageIcon("res/button2Player.png");
+        JButton TwoPlayerButton = new JButton(icon2);
+
+        JPanel panel = new JPanel();
+        panel.setBounds(370, 500, 222, 99);
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.add(OnePlayerButton);
+        panel.add(TwoPlayerButton);
+
+        OnePlayerButton.addActionListener(e -> {
+            panel.setVisible(false);
+            BackgroundImageForStartMenu.setVisible(false);
+            canvas.setVisible(true);
+            scorePanel.setVisible(true);
+            ammoPanel.setVisible(true);
+            lifePanel.setVisible(true);
+            canvas.addKeyListener(Controller);    //adding the controller to the Canvas
+            canvas.requestFocusInWindow();   // making sure that the Canvas is in focus so keyboard input will be taking in .
+            startGame = true;
+        });
+
+        TwoPlayerButton.addActionListener(e -> {
+            panel.setVisible(false);
+            BackgroundImageForStartMenu.setVisible(false);
+            canvas.setVisible(true);
+            scorePanel.setVisible(true);
+            ammoPanel.setVisible(true);
+            lifePanel.setVisible(true);
+            canvas.addKeyListener(Controller);    //adding the controller to the Canvas
+            canvas.addKeyListener(Controller2);    //adding the controller to the Canvas
+            canvas.requestFocusInWindow();   // making sure that the Canvas is in focus so keyboard input will be taking in .
+            multiMode = true;
+            startGame = true;
+        });
+
+        panel.validate();
+        return panel;
+    }
+
+    private void setupUI() {
         scorePanel.setVisible(false);
         scorePanel.setBounds(485, 0, 115, 35);
         scorePanel.setBackground(Color.black);
@@ -98,71 +195,6 @@ public class MainWindow {
         ko.setForeground(Color.white);
         ko.setHorizontalAlignment(JLabel.CENTER);
         gameOver.add(ko);
-
-        startMenuButton.addActionListener(e -> {
-            startMenuButton.setVisible(false);
-            BackgroundImageForStartMenu.setVisible(false);
-            canvas.setVisible(true);
-            scorePanel.setVisible(true);
-            ammoPanel.setVisible(true);
-            lifePanel.setVisible(true);
-            canvas.addKeyListener(Controller);    //adding the controller to the Canvas
-            canvas.addKeyListener(Controller2);    //adding the controller to the Canvas
-            canvas.requestFocusInWindow();   // making sure that the Canvas is in focus so keyboard input will be taking in .
-            startGame = true;
-        });
-        startMenuButton.setBounds(400, 500, 200, 40);
-
-
-        //loading background image
-        File BackgroundToLoad = new File("res/space_splash.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
-        try {
-            BufferedImage myPicture = ImageIO.read(BackgroundToLoad);
-            BackgroundImageForStartMenu = new JLabel(new ImageIcon(myPicture));
-            BackgroundImageForStartMenu.setBounds(0, 35, 1000, 965);
-            frame.add(BackgroundImageForStartMenu);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        frame.add(startMenuButton);
-        frame.setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        MainWindow hello = new MainWindow();  //sets up environment
-
-        //not nice but remember we do just want to keep looping till the end.  // this could be replaced by a thread but again we want to keep things simple
-        while (true) {
-            //swing has timer class to help us time this but I'm writing my own, you can of course use the timer, but I want to set FPS and display it
-            int TimeBetweenFrames = 1000 / TargetFPS;
-            long FrameCheck = System.currentTimeMillis() + (long) TimeBetweenFrames;
-
-            //wait till next time step
-            while (FrameCheck > System.currentTimeMillis()) {
-            }
-
-            if (startGame) {
-                if (gameWorld.getPlayer().getLives() == 0) {
-                    gameOver.setVisible(true);
-                    //scorePanel.setVisible(false);
-                    //ammoPanel.setVisible(false);
-                    //lifePanel.setVisible(false);
-                    gameWorld.setGameStart(true);
-                    try {
-                        TimeUnit.SECONDS.sleep(5);
-                        frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    gameLoop();
-                }
-            }
-
-            //UNIT test to see if framerate matches
-            UnitTests.CheckFrameRate(System.currentTimeMillis(), FrameCheck, TargetFPS);
-        }
     }
 
     //Basic Model-View-Controller pattern
@@ -171,6 +203,10 @@ public class MainWindow {
 
         // controller input  will happen on its own thread
         // So no need to call it explicitly
+
+        if (multiMode) {
+            gameWorld.setMultiplayerMode(true);
+        }
 
         // model update
         gameWorld.Logic();
