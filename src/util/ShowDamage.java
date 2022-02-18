@@ -17,11 +17,6 @@ public class ShowDamage extends TimerTask {
 
     @Override
     public void run() {
-        ++i;
-        if (i == 1) {
-            object.setTexture(texture);
-            i = 0;
-            cancel();
-        }
+        object.setTexture(texture);
     }
 }

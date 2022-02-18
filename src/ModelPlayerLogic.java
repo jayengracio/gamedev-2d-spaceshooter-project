@@ -23,15 +23,15 @@ public class ModelPlayerLogic {
                     Player.setInvincible(true);
 
                     // show visual damage
-                    Player.setTexture("res/player_shielded.png");
+                    Player.setTexture("res/playerDamaged.png");
                     Timer timer = new Timer();
                     //ShowDamage damage = new ShowDamage(Player, "res/playerShip1.png");
                     TimerTask damage = new TimerTask() {
                         @Override
                         public void run() {
                             i++;
-                            if (i >= 3) {
-                                Player.setTexture("res/playerShip1.png");
+                            if (i >= 2) {
+                                Player.setTexture(Player.getDefaultTexture());
                                 Player.setInvincible(false);
                                 i = 0;
                                 cancel();
@@ -59,15 +59,15 @@ public class ModelPlayerLogic {
                     Player.setInvincible(true);
 
                     // show visual damage
-                    Player.setTexture("res/player_shielded.png");
+                    Player.setTexture("res/playerDamaged.png");
                     Timer timer = new Timer();
                     //ShowDamage damage = new ShowDamage(Player, "res/playerShip1.png");
                     TimerTask damage = new TimerTask() {
                         @Override
                         public void run() {
                             i++;
-                            if (i >= 3) {
-                                Player.setTexture("res/playerShip1.png");
+                            if (i >= 2) {
+                                Player.setTexture(Player.getDefaultTexture());
                                 Player.setInvincible(false);
                                 i = 0;
                                 cancel();
@@ -80,7 +80,7 @@ public class ModelPlayerLogic {
         }
     }
 
-    public void playerLogic(Model model, Player Player, Controller controller, CopyOnWriteArrayList<GameObject> BulletList) {
+    public void playerLogic(Model model, Player Player, Controller controller, CopyOnWriteArrayList<GameObject> BulletList, String bulletTexture) {
         // smoother animation is possible if we make a target position  // done but may try to change things for students
         //check for movement and if you fired a bullet
         if (controller.isKeyAPressed()) {
@@ -103,12 +103,12 @@ public class ModelPlayerLogic {
             if (Player.getAmmo() == 0) {
                 Player.setAmmo(-1);
                 Timer timer = new Timer();
-                ReloadAmmo reload = new ReloadAmmo(Player, 6);
+                ReloadAmmo reload = new ReloadAmmo(Player, Player.getMaxAmmo());
                 timer.schedule(reload, 1000, 1000);
             } else if (Player.getAmmo() == -1) {
                 // Does nothing. This stops timer from scheduling the same task multiple times
             } else {
-                CreateBullet(BulletList, Player);
+                CreateBullet(BulletList, Player, bulletTexture);
                 Player.setAmmo(Player.getAmmo() - 1);
             }
             controller.setKeySpacePressed(false);
@@ -150,11 +150,11 @@ public class ModelPlayerLogic {
     }
 
     // Create bullet for player
-    private void CreateBullet(CopyOnWriteArrayList<GameObject> BulletList, Player Player) {
-        BulletList.add(new GameObject("res/laserGreen.png", 9, 33, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
+    private void CreateBullet(CopyOnWriteArrayList<GameObject> BulletList, Player Player, String texture) {
+        BulletList.add(new GameObject(texture, 9, 33, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
 
         if (Player.getUpgradeLevel() == 2)
-            BulletList.add(new GameObject("res/laserBlue.png", 9, 33, new Point3f(Player.getCentre().getX() + 60, Player.getCentre().getY(), 0.0f)));
+            BulletList.add(new GameObject(texture, 9, 33, new Point3f(Player.getCentre().getX() + 60, Player.getCentre().getY(), 0.0f)));
 
         SoundEffect sfx = new SoundEffect("sfx/sfx_laser1.wav");
         sfx.playSFX();

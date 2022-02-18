@@ -2,25 +2,25 @@ package entity;
 
 import util.GameObject;
 import util.Point3f;
-import util.ReloadAmmo;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Player extends GameObject {
     private int lives;
     private int upgradeLevel;
     private int ammo;
+    private int maxAmmo;
     private boolean invincible;
     private boolean dead = false;
+    private String defaultTexture;
 
     public Player(){}
 
-    public Player(String textureLocation, int width, int height, Point3f centre, int health, int upgradeLevel, int ammo) {
+    public Player(String textureLocation, int width, int height, Point3f centre, int health, int ammo) {
         super(textureLocation, width, height, centre);
         this.lives = health;
         this.ammo = ammo;
         this.upgradeLevel = 1;
+        this.defaultTexture = textureLocation;
+        this.maxAmmo = ammo;
     }
 
     public int getLives() {
@@ -53,6 +53,25 @@ public class Player extends GameObject {
 
     public void setInvincible(boolean invincible) {
         this.invincible = invincible;
+    }
+
+    public int getMaxAmmo() {
+        if (upgradeLevel == 2) {
+            maxAmmo = 10;
+        }
+        return maxAmmo;
+    }
+
+    public void setMaxAmmo(int maxAmmo) {
+        this.maxAmmo = maxAmmo;
+    }
+
+    public String getDefaultTexture() {
+        return defaultTexture;
+    }
+
+    public void setDefaultTexture(String defaultTexture) {
+        this.defaultTexture = defaultTexture;
     }
 
     public boolean isDead() {

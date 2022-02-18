@@ -1,5 +1,3 @@
-import util.UnitTests;
-
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
@@ -40,12 +38,22 @@ public class MainWindow {
     private static final JFrame frame = new JFrame("Starfighter 22");   // Change to the name of your game
     private static final Model gameWorld = new Model("Hello");
     private static final Viewer canvas = new Viewer(gameWorld);
+
     private static final JPanel scorePanel = new JPanel();
+    private static final JLabel scoreCount = new JLabel("Score: ");
+    private static final JPanel timePanel = new JPanel();
+    private static final JLabel time = new JLabel();
+
     private static final JPanel player1AmmoPanel = new JPanel();
     private static final JPanel player1LifePanel = new JPanel();
-    private static final JLabel score = new JLabel("Score: ");
-    private static final JLabel ammo = new JLabel("Ammo: ");
-    private static final JLabel life = new JLabel("Lives: ");
+    private static final JLabel player1AmmoCount = new JLabel(new ImageIcon("res/ammo_icon.png"));
+    private static final JLabel player1LifeCount = new JLabel(new ImageIcon("res/playerLife1_red.png"));
+
+    private static final JPanel player2AmmoPanel = new JPanel();
+    private static final JPanel player2LifePanel = new JPanel();
+    private static final JLabel player2AmmoCount = new JLabel(new ImageIcon("res/ammo_icon.png"));
+    private static final JLabel player2LifeCount = new JLabel(new ImageIcon("res/playerLife1_blue.png"));
+
     private static final JPanel gameOver = new JPanel();
     private static final int TargetFPS = 300;
     private static boolean startGame = false;
@@ -59,8 +67,11 @@ public class MainWindow {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //If exit // you can modify with your way of quitting , just is a template.
         frame.setLayout(null);
         frame.add(scorePanel);
+        frame.add(timePanel);
         frame.add(player1AmmoPanel);
         frame.add(player1LifePanel);
+        frame.add(player2AmmoPanel);
+        frame.add(player2LifePanel);
         frame.add(gameOver);
         frame.add(canvas);
 
@@ -74,7 +85,7 @@ public class MainWindow {
         setupUI();
 
         //loading background image
-        File BackgroundToLoad = new File("res/space_splash.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
+        File BackgroundToLoad = new File("res/splash_screen.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
         try {
             BufferedImage myPicture = ImageIO.read(BackgroundToLoad);
             BackgroundImageForStartMenu = new JLabel(new ImageIcon(myPicture));
@@ -127,7 +138,7 @@ public class MainWindow {
             }
 
             //UNIT test to see if framerate matches
-            UnitTests.CheckFrameRate(System.currentTimeMillis(), FrameCheck, TargetFPS);
+            //UnitTests.CheckFrameRate(System.currentTimeMillis(), FrameCheck, TargetFPS);
         }
     }
 
@@ -146,11 +157,7 @@ public class MainWindow {
 
         OnePlayerButton.addActionListener(e -> {
             panel.setVisible(false);
-            BackgroundImageForStartMenu.setVisible(false);
-            canvas.setVisible(true);
-            scorePanel.setVisible(true);
-            player1AmmoPanel.setVisible(true);
-            player1LifePanel.setVisible(true);
+            playerButtonsHelper();
             canvas.addKeyListener(Controller);    //adding the controller to the Canvas
             canvas.requestFocusInWindow();   // making sure that the Canvas is in focus so keyboard input will be taking in .
             startGame = true;
@@ -158,11 +165,9 @@ public class MainWindow {
 
         TwoPlayerButton.addActionListener(e -> {
             panel.setVisible(false);
-            BackgroundImageForStartMenu.setVisible(false);
-            canvas.setVisible(true);
-            scorePanel.setVisible(true);
-            player1AmmoPanel.setVisible(true);
-            player1LifePanel.setVisible(true);
+            playerButtonsHelper();
+            player2AmmoPanel.setVisible(true);
+            player2LifePanel.setVisible(true);
             canvas.addKeyListener(Controller);    //adding the controller to the Canvas
             canvas.addKeyListener(Controller2);    //adding the controller to the Canvas
             canvas.requestFocusInWindow();   // making sure that the Canvas is in focus so keyboard input will be taking in .
@@ -174,34 +179,77 @@ public class MainWindow {
         return panel;
     }
 
+    private void playerButtonsHelper() {
+        BackgroundImageForStartMenu.setVisible(false);
+        canvas.setVisible(true);
+        scorePanel.setVisible(true);
+        player1AmmoPanel.setVisible(true);
+        player1LifePanel.setVisible(true);
+        timePanel.setVisible(true);
+    }
+
     private void setupUI() {
         scorePanel.setVisible(false);
-        scorePanel.setBounds(485, 0, 115, 35);
+        scorePanel.setBounds(450, 0, 115, 35);
         scorePanel.setBackground(Color.black);
-        score.setFont(new Font("Verdana", Font.PLAIN, 20));
-        score.setForeground(Color.white);
-        scorePanel.add(score);
+        scoreCount.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
+        scoreCount.setForeground(Color.white);
+        scorePanel.add(scoreCount);
 
-        player1AmmoPanel.setVisible(false);
-        player1AmmoPanel.setBounds(111, 0, 110, 35);
-        player1AmmoPanel.setBackground(Color.black);
-        ammo.setFont(new Font("Verdana", Font.PLAIN, 20));
-        ammo.setForeground(Color.white);
-        player1AmmoPanel.add(ammo);
+        timePanel.setVisible(false);
+        timePanel.setBounds(325, 0, 115, 35);
+        timePanel.setBackground(Color.black);
+        time.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
+        time.setForeground(Color.white);
+        timePanel.add(time);
+
+        ImageIcon t = new ImageIcon("res/enemy_ships/enemyBlue2.png");
+        Image timeImg = t.getImage();
+        Image newTimeIcon = timeImg.getScaledInstance(28, 26, Image.SCALE_SMOOTH);
+        ImageIcon newImgIcon = new ImageIcon(newTimeIcon);
+        time.setIcon(newImgIcon);
 
         player1LifePanel.setVisible(false);
         player1LifePanel.setBounds(0, 0, 110, 35);
         player1LifePanel.setBackground(Color.black);
-        life.setFont(new Font("Verdana", Font.PLAIN, 20));
-        life.setForeground(Color.white);
-        player1LifePanel.add(life);
+        player1LifeCount.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
+        player1LifeCount.setForeground(Color.white);
+        player1LifePanel.add(player1LifeCount);
+
+        player1AmmoPanel.setVisible(false);
+        player1AmmoPanel.setBounds(111, 0, 110, 35);
+        player1AmmoPanel.setBackground(Color.black);
+        player1AmmoCount.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
+        player1AmmoCount.setForeground(Color.white);
+        player1AmmoPanel.add(player1AmmoCount);
+
+        player2LifePanel.setVisible(false);
+        player2LifePanel.setBounds(880, 0, 110, 35);
+        player2LifePanel.setBackground(Color.black);
+        player2LifeCount.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
+        player2LifeCount.setForeground(Color.white);
+        player2LifePanel.add(player2LifeCount);
+
+        player2AmmoPanel.setVisible(false);
+        player2AmmoPanel.setBounds(768, 0, 110, 35);
+        player2AmmoPanel.setBackground(Color.black);
+        player2AmmoCount.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
+        player2AmmoCount.setForeground(Color.white);
+        player2AmmoPanel.add(player2AmmoCount);
+
+        ImageIcon icon = new ImageIcon("res/ammo_icon.png");
+        Image img = icon.getImage();
+        Image newIcon = img.getScaledInstance(26, 26, Image.SCALE_SMOOTH);
+        ImageIcon newIc = new ImageIcon(newIcon);
+        player2AmmoCount.setIcon(newIc);
+        player1AmmoCount.setIcon(newIc);
 
         gameOver.setLayout(new GridBagLayout());
         gameOver.setVisible(false);
         gameOver.setBounds(250, 250, 500, 500);
         gameOver.setBackground(Color.black);
         JLabel ko = new JLabel("Game Over!");
-        ko.setFont(new Font("Verdana", Font.PLAIN, 20));
+        ko.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         ko.setForeground(Color.white);
         ko.setHorizontalAlignment(JLabel.CENTER);
         gameOver.add(ko);
@@ -227,15 +275,36 @@ public class MainWindow {
         // Both these calls could be setup as  a thread but we want to simplify the game logic for you.
         //score update
         //frame.setTitle("Score =  " + gameWorld.getScore() + " " + "Ammo = " + gameWorld.getPlayer().getAmmo());
-        score.setText("Score: " + gameWorld.getScore());
-        life.setText("Lives: " + gameWorld.getPlayer().getLives());
+        scoreCount.setText("Score: " + gameWorld.getScore());
+        time.setText(" " + gameWorld.getElapsedTime());
+
+        player1LifeCount.setText(" " + gameWorld.getPlayer().getLives());
+        player2LifeCount.setText(" " + gameWorld.getPlayer2().getLives());
 
         if (gameWorld.getPlayer().getAmmo() == -1) {
-            ammo.setForeground(Color.red);
-            ammo.setText("Ammo: R!");
+            player1AmmoCount.setForeground(Color.red);
+            player1AmmoCount.setText(" R!");
         } else {
-            ammo.setForeground(Color.white);
-            ammo.setText("Ammo: " + gameWorld.getPlayer().getAmmo());
+            player1AmmoCount.setForeground(Color.white);
+            player1AmmoCount.setText(" " + gameWorld.getPlayer().getAmmo());
+        }
+
+        if (gameWorld.getPlayer2().getAmmo() == -1) {
+            player2AmmoCount.setForeground(Color.red);
+            player2AmmoCount.setText(" R!");
+        } else {
+            player2AmmoCount.setForeground(Color.white);
+            player2AmmoCount.setText(" " + gameWorld.getPlayer2().getAmmo());
+        }
+
+        if (gameWorld.getPlayer().isDead()) {
+            player1LifeCount.setForeground(Color.red);
+            player1LifeCount.setText("DEAD");
+        }
+
+        if (gameWorld.getPlayer2().isDead()) {
+            player2LifeCount.setForeground(Color.red);
+            player2LifeCount.setText("DEAD");
         }
     }
 }

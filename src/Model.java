@@ -41,38 +41,47 @@ public class Model {
     private final CopyOnWriteArrayList<GameObject> EnemyBulletList = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<GameObject> HazardList = new CopyOnWriteArrayList<>();
     private final long createdMillis = System.currentTimeMillis();
+    private long elapsedTime;
     private final ModelPlayerLogic gLogic = new ModelPlayerLogic();
     private int Score = 0;
     boolean gameStart = true;
     boolean multiplayerMode = false;
-    int i = 0;
+    int bossArrival = 180;
 
     public Model() {
         // Setup game world
-        EnemiesList.add(new Enemy("res/enemyBlack1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0), 3, 1));
-        EnemiesList.add(new Enemy("res/enemyBlack2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0), 3, 1));
-        EnemiesList.add(new Enemy("res/enemyBlack3.png", 60, 45, new Point3f(((float) Math.random() * 150 + 600), 0, 0), 3, 1));
-        EnemiesList.add(new Enemy("res/enemyBlack4.png", 60, 45, new Point3f(((float) Math.random() * 200 + 700), 0, 0), 3, 1));
-        HazardList.add(new GameObject("res/meteor_1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0)));
-        HazardList.add(new GameObject("res/meteor_2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0)));
+        EnemiesList.add(new Enemy("res/enemy_ships/enemyBlack1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0), 3, 1));
+        EnemiesList.add(new Enemy("res/enemy_ships/enemyBlack2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0), 3, 1));
+        EnemiesList.add(new Enemy("res/enemy_ships/enemyBlack3.png", 60, 45, new Point3f(((float) Math.random() * 150 + 600), 0, 0), 3, 1));
+        EnemiesList.add(new Enemy("res/enemy_ships/enemyBlack4.png", 60, 45, new Point3f(((float) Math.random() * 200 + 700), 0, 0), 3, 1));
+        HazardList.add(new GameObject("res/meteors/meteor_1.png", 60, 45, new Point3f(((float) Math.random() * 50 + 400), 0, 0)));
+        HazardList.add(new GameObject("res/meteors/meteor_2.png", 60, 45, new Point3f(((float) Math.random() * 100 + 500), 0, 0)));
     }
 
     public Model(String hello) {
-        Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 4, 0, 6);
-        Player2 = new Player("res/playerShip_Orange.png", 67, 50, new Point3f(200, 500, 0), 4, 0, 6);
+        Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 4, 6);
+        Player2 = new Player("res/playerShip2.png", 67, 50, new Point3f(200, 500, 0), 4, 6);
 
         // To stop the timer being started twice, I created another constructor with a redundant argument
-        Timer timer = new Timer();
-        TimerTask task = new TimerTask() {
+        Timer enemyFire = new Timer();
+        TimerTask fireTask = new TimerTask() {
             @Override
             public void run() {
                 if (gameStart && EnemiesList.size() > 0) {
                     CreateEnemyBullet();
-                    if (i == 2) {
-                        CreateEnemyBullet();
-                        i = 0;
-                    }
                 }
+            }
+        };
+        enemyFire.schedule(fireTask, 2000, 1300);
+
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                if (bossArrival == 0) {
+                    timer.cancel();
+                    timer.purge();
+                } else --bossArrival;
             }
         };
         timer.schedule(task, 2000, 1000);
@@ -91,6 +100,8 @@ public class Model {
             gameLogic();
             // Hazard logic
             hazardLogic();
+
+            elapsedTime = bossArrival;
         }
     }
 
@@ -107,10 +118,10 @@ public class Model {
 
                     // show visual damage
                     String textureId = temp.getTexture().substring(temp.getTexture().length() - 5);
-                    temp.setTexture("res/enemyRed" + textureId);
+                    temp.setTexture("res/enemy_ships/enemyRed" + textureId);
                     Timer timer = new Timer();
-                    ShowDamage damage = new ShowDamage(temp, "res/enemyBlack" + textureId);
-                    timer.schedule(damage, 300, 300);
+                    ShowDamage damage = new ShowDamage(temp, "res/enemy_ships/enemyBlack" + textureId);
+                    timer.schedule(damage, 200, 200);
 
                     if (temp.getHealth() == 0) {
                         EnemiesList.remove(temp);
@@ -156,14 +167,8 @@ public class Model {
             }
         }
 
-        if (HazardList.size() < 1) {
-            while (HazardList.size() < 4) {
-                int max = 5;
-                int min = 1;
-                int rand = random.nextInt(max - min + 1) + min;
-                String texture = "res/meteor_" + rand + ".png";
-                HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
-            }
+        if (HazardList.size() < 2) {
+            createHazard();
         }
     }
 
@@ -203,10 +208,23 @@ public class Model {
         int min = 1;
         int rand = random.nextInt(max - min + 1) + min;
 
-        String texture = "res/enemyBlack" + rand + ".png";
+        String texture = "res/enemy_ships/enemyBlack" + rand + ".png";
         EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 2, 1));
         if (rand > 3) {
             EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 2, 1));
+        }
+    }
+
+    private void createHazard() {
+        Random random = new Random();
+        int max = 5;
+        int min = 1;
+        int rand = random.nextInt(max - min + 1) + min;
+
+        String texture = "res/meteors/meteor_" + rand + ".png";
+        HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
+        if (rand > 3) {
+            HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
         }
     }
 
@@ -227,12 +245,12 @@ public class Model {
 
     private void playerLogic() {
         if (!Player.isDead()) {
-            gLogic.playerLogic(this, Player, controller, BulletList);
+            gLogic.playerLogic(this, Player, controller, BulletList, "res/laserGreen.png");
             gLogic.playerBulletLogic(BulletList, Player);
         }
 
-        if (isMultiplayerMode() && !Player2.isDead()) {
-            gLogic.playerLogic(this, Player2, controller2, BulletList);
+        if (!Player2.isDead()) {
+            gLogic.playerLogic(this, Player2, controller2, BulletList, "res/laserBlue.png");
             gLogic.playerBulletLogic(BulletList, Player2);
         }
     }
@@ -287,6 +305,10 @@ public class Model {
 
     public void setMultiplayerMode(boolean multiplayerMode) {
         this.multiplayerMode = multiplayerMode;
+    }
+
+    public long getElapsedTime() {
+        return elapsedTime;
     }
 }
 
