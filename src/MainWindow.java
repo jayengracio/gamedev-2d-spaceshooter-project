@@ -41,8 +41,8 @@ public class MainWindow {
 
     private static final JPanel scorePanel = new JPanel();
     private static final JLabel scoreCount = new JLabel("Score: ");
-    private static final JPanel timePanel = new JPanel();
-    private static final JLabel time = new JLabel();
+    private static final JPanel bossPanel = new JPanel();
+    private static final JLabel bossCounter = new JLabel();
     private static final JLabel ko = new JLabel("Game Over!");
 
     private static final JPanel player1AmmoPanel = new JPanel();
@@ -68,7 +68,7 @@ public class MainWindow {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //If exit // you can modify with your way of quitting , just is a template.
         frame.setLayout(null);
         frame.add(scorePanel);
-        frame.add(timePanel);
+        frame.add(bossPanel);
         frame.add(player1AmmoPanel);
         frame.add(player1LifePanel);
         frame.add(player2AmmoPanel);
@@ -133,11 +133,11 @@ public class MainWindow {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } else if(gameWorld.getBoss().isDefeated()) {
+                } else if (gameWorld.getBoss().isDefeated()) {
                     ko.setText("Victory!\n Score: " + gameWorld.getScore());
                     gameOver.setVisible(true);
                     gameWorld.setGameStart(false);
-                }else {
+                } else {
                     gameLoop();
                 }
             }
@@ -190,7 +190,7 @@ public class MainWindow {
         scorePanel.setVisible(true);
         player1AmmoPanel.setVisible(true);
         player1LifePanel.setVisible(true);
-        timePanel.setVisible(true);
+        bossPanel.setVisible(true);
     }
 
     private void setupUI() {
@@ -201,18 +201,18 @@ public class MainWindow {
         scoreCount.setForeground(Color.white);
         scorePanel.add(scoreCount);
 
-        timePanel.setVisible(false);
-        timePanel.setBounds(325, 0, 115, 35);
-        timePanel.setBackground(Color.black);
-        time.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
-        time.setForeground(Color.white);
-        timePanel.add(time);
+        bossPanel.setVisible(false);
+        bossPanel.setBounds(325, 0, 115, 35);
+        bossPanel.setBackground(Color.black);
+        bossCounter.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
+        bossCounter.setForeground(Color.white);
+        bossPanel.add(bossCounter);
 
-        ImageIcon t = new ImageIcon("res/enemy_ships/enemyBlue2.png");
+        ImageIcon t = new ImageIcon("res/enemy_ships/enemyBoss.png");
         Image timeImg = t.getImage();
         Image newTimeIcon = timeImg.getScaledInstance(28, 26, Image.SCALE_SMOOTH);
         ImageIcon newImgIcon = new ImageIcon(newTimeIcon);
-        time.setIcon(newImgIcon);
+        bossCounter.setIcon(newImgIcon);
 
         player1LifePanel.setVisible(false);
         player1LifePanel.setBounds(0, 0, 110, 35);
@@ -281,7 +281,10 @@ public class MainWindow {
         //score update
         //frame.setTitle("Score =  " + gameWorld.getScore() + " " + "Ammo = " + gameWorld.getPlayer().getAmmo());
         scoreCount.setText("Score: " + gameWorld.getScore());
-        time.setText(" " + gameWorld.getBossArrival());
+        if (gameWorld.getBossArrival() != 0) {
+            bossCounter.setText(" " + gameWorld.getBossArrival());
+        } else bossCounter.setText(" " + gameWorld.getBoss().getHealth());
+
 
         player1LifeCount.setText(" " + gameWorld.getPlayer().getLives());
         player2LifeCount.setText(" " + gameWorld.getPlayer2().getLives());

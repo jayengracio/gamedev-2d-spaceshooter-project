@@ -1,15 +1,10 @@
 import util.GameObject;
 
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.LayoutManager;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-
-import javax.imageio.ImageIO;
-import javax.swing.JPanel;
 
 
 /*
@@ -109,7 +104,7 @@ public class Viewer extends JPanel {
         //Draw Enemies
         gameWorld.getHazards().forEach((temp) -> {
             if (!gameWorld.getHazards().isEmpty())
-            drawHazards((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g);
+                drawHazards((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g);
         });
 
         //Draw Enemy bullets
@@ -147,10 +142,19 @@ public class Viewer extends JPanel {
     }
 
     private void drawBackground(Graphics g) {
+        // Should work okay on OSX and Linux but check if you have issues depending on your eclipse install
+        // or if you're running this without an IDE
         File TextureToLoad;
-        if (gameWorld.getBossArrival() == 0) {
-            TextureToLoad = new File("res/Background2.png");
-        } else TextureToLoad = new File("res/Background.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
+        if (gameWorld.getBossArrival() <= 120 && gameWorld.getBossArrival() > 60) {
+            TextureToLoad = new File("res/bg/level2.png");
+        } else if (gameWorld.getBossArrival() <= 60 && gameWorld.getBossArrival() > 0) {
+            TextureToLoad = new File("res/bg/level3.png");
+        } else if (gameWorld.getBossArrival() <= 0) {
+            TextureToLoad = new File("res/bg/level4.png");
+        } else {
+            TextureToLoad = new File("res/bg/level1.png");
+        }
+
         try {
             Image myImage = ImageIO.read(TextureToLoad);
             g.drawImage(myImage, 0, 0, 1000, 1000, 0, 0, 1000, 1000, null);
@@ -191,10 +195,6 @@ public class Viewer extends JPanel {
         //Lighnting Png from https://opengameart.org/content/animated-spaceships  its 32x32 thats why I know to increament by 32 each time
         // Bullets from https://opengameart.org/forumtopic/tatermands-art
         // background image from https://www.needpix.com/photo/download/677346/space-stars-nebula-background-galaxy-universe-free-pictures-free-photos-free-images
-    }
-
-    private void playerAnimation() {
-
     }
 }
 

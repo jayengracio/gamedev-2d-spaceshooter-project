@@ -1,7 +1,10 @@
 import entity.Boss;
 import entity.Enemy;
 import entity.Player;
-import util.*;
+import util.GameObject;
+import util.Point3f;
+import util.SoundEffect;
+import util.Vector3f;
 
 import java.util.Random;
 import java.util.Timer;
@@ -45,13 +48,13 @@ public class Model {
     private final long createdMillis = System.currentTimeMillis();
     private final ModelPlayerLogic gLogic = new ModelPlayerLogic();
     private int Score = 0;
-    boolean gameStart = true;
-    boolean multiplayerMode = false;
-    boolean clear = false;
-    boolean startBoss = false;
-    int x;
-    double acceleration;
-    int bossArrival = 5;
+    private boolean gameStart = true;
+    private boolean multiplayerMode = false;
+    private boolean clear = false;
+    private boolean startBoss = false;
+    private int moveRandomizer;
+    private double bossSpeed;
+    private int bossArrival = 180;
 
     public Model() {
         // Setup game world
@@ -64,8 +67,8 @@ public class Model {
     }
 
     public Model(String hello) {
-        Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 4, 6);
-        Player2 = new Player("res/playerShip2.png", 67, 50, new Point3f(200, 500, 0), 4, 6);
+        Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 15, 6);
+        Player2 = new Player("res/playerShip2.png", 67, 50, new Point3f(200, 500, 0), 15, 6);
 
         // To stop the timer being started twice, I created another constructor with a redundant argument
         Timer enemyFire = new Timer();
@@ -73,18 +76,19 @@ public class Model {
             @Override
             public void run() {
                 if (gameStart && EnemiesList.size() > 0) {
+                    moveRandomizer = (Math.random() <= 0.5) ? 1 : 2;
                     if (bossArrival == 0) {
                         enemyFire.cancel();
                         enemyFire.purge();
                     } else if (getScore() > 15 && getScore() <= 40) {
-                        CreateEnemyBullet();
-                        CreateEnemyBullet();
+                        createEnemyBullet();
+                        createEnemyBullet();
                     } else if (getScore() > 40) {
-                        CreateEnemyBullet();
-                        CreateEnemyBullet();
-                        CreateEnemyBullet();
+                        createEnemyBullet();
+                        createEnemyBullet();
+                        createEnemyBullet();
                     } else {
-                        CreateEnemyBullet();
+                        createEnemyBullet();
                     }
                 }
             }
@@ -102,7 +106,7 @@ public class Model {
                 } else --bossArrival;
             }
         };
-        timer.schedule(task, 2000, 1000);
+        timer.schedule(task, 2000, 900);
     }
 
     // This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.
@@ -127,13 +131,13 @@ public class Model {
                 EnemyBulletList.clear();
                 BulletList.clear();
 
-                boss = new Boss("res/enemy_ships/enemyBlue2.png", 100, 85, new Point3f(500, 200, 0), 200, 3);
+                boss = new Boss("res/enemy_ships/enemyBoss.png", 100, 85, new Point3f(500, 200, 0), 200, 3);
                 Timer enemyFire = new Timer();
                 TimerTask fireTask = new TimerTask() {
                     @Override
                     public void run() {
                         if (gameStart)
-                        createBossBullet();
+                            createBossBullet();
                     }
                 };
                 enemyFire.schedule(fireTask, 2000, 1000);
@@ -150,7 +154,9 @@ public class Model {
     private void gameLogic() {
         // this is a way to increment across the array list data structure
         // see if they hit anything
-        // using enhanced for-loop style as it makes it alot easier both code wise and reading wise too
+        // using enhanced for-loop style as it makes it a lot easier both code wise and reading wise too
+
+        // Player bullet collision against enemy ships
         for (Enemy temp : EnemiesList) {
             for (GameObject Bullet : BulletList) {
                 if (Math.abs(temp.getCentre().getX() - Bullet.getCentre().getX()) < temp.getWidth()
@@ -162,8 +168,18 @@ public class Model {
                     String textureId = temp.getTexture().substring(temp.getTexture().length() - 5);
                     temp.setTexture("res/enemy_ships/enemyRed" + textureId);
                     Timer timer = new Timer();
-                    ShowDamage damage = new ShowDamage(temp, "res/enemy_ships/enemyBlack" + textureId);
-                    timer.schedule(damage, 200, 200);
+                    TimerTask task = new TimerTask() {
+                        @Override
+                        public void run() {
+                            if (getBossArrival() <= 120 && getBossArrival() > 60) {
+                                temp.setTexture("res/enemy_ships/enemyGreen" + textureId);
+                            } else if (getBossArrival() <= 60 && getBossArrival() > 0) {
+                                temp.setTexture("res/enemy_ships/enemyOrange" + textureId);
+                            } else temp.setTexture("res/enemy_ships/enemyBlack" + textureId);
+                            timer.purge();
+                        }
+                    };
+                    timer.schedule(task, 200, 200);
 
                     if (temp.getHealth() == 0) {
                         EnemiesList.remove(temp);
@@ -175,6 +191,7 @@ public class Model {
             }
         }
 
+        // Player bullet collision against boss
         if (getBossArrival() == 0) {
             for (GameObject Bullet : BulletList) {
                 if (Math.abs(boss.getCentre().getX() - Bullet.getCentre().getX()) < boss.getWidth()
@@ -183,11 +200,16 @@ public class Model {
                     boss.setHealth(boss.getHealth() - 1);
 
                     // show visual damage
-                    String textureId = boss.getTexture().substring(boss.getTexture().length() - 5);
-                    boss.setTexture("res/enemy_ships/enemyRed" + textureId);
+                    boss.setTexture("res/enemy_ships/enemyBoss_Red.png");
                     Timer timer = new Timer();
-                    ShowDamage damage = new ShowDamage(boss, "res/enemy_ships/enemyBlue" + textureId);
-                    timer.schedule(damage, 200, 200);
+                    TimerTask task = new TimerTask() {
+                        @Override
+                        public void run() {
+                            boss.setTexture("res/enemy_ships/enemyBoss.png");
+                            timer.purge();
+                        }
+                    };
+                    timer.schedule(task, 200, 200);
 
                     if (boss.getHealth() == 0) {
                         SoundEffect sfx = new SoundEffect("sfx/sfx_twoTone.wav");
@@ -221,7 +243,6 @@ public class Model {
     }
 
     private void hazardLogic() {
-        Random random = new Random();
         for (GameObject temp : HazardList) {
             // Move enemies
             temp.getCentre().ApplyVector(new Vector3f(0, (float) -0.5, 0));
@@ -237,26 +258,53 @@ public class Model {
         }
     }
 
+    private void createHazard() {
+        Random random = new Random();
+        int max = 5;
+        int min = 1;
+        int rand = random.nextInt(max - min + 1) + min;
+
+        String texture = "res/meteors/meteor_" + rand + ".png";
+        HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
+        if (rand > 3) {
+            HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
+        }
+
+        if (getBossArrival() <= 120 && getBossArrival() > 60) {
+            HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
+        } else if (getBossArrival() <= 60 && getBossArrival() > 0) {
+            HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
+        }
+    }
+
     private void bossLogic() {
         Random rand = new Random();
-        float strafeSpeed = 0.7f;
+        float strafeSpeed;
+
+        if (getBoss().getHealth() <= 150 && getBoss().getHealth() > 80) {
+            strafeSpeed = 1.03f;
+        } else if (getBoss().getHealth() <= 80) {
+            strafeSpeed = 1.10f;
+        }else {
+            strafeSpeed = 0.84f;
+        }
 
         if (!startBoss) {
             Timer timer = new Timer();
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
-                    acceleration = -0.8 + rand.nextDouble();
-                    x = (Math.random() <= 0.5) ? 1 : 2;
+                    bossSpeed = -0.8 + rand.nextDouble();
+                    moveRandomizer = (Math.random() <= 0.5) ? 1 : 2;
                 }
             };
             timer.schedule(task, 3000, 800);
             startBoss = true;
         }
 
-        if (x == 1)
-            boss.getCentre().ApplyVector(new Vector3f(-(strafeSpeed), (float) acceleration, 0));
-        else boss.getCentre().ApplyVector(new Vector3f((strafeSpeed), (float) -acceleration, 0));
+        if (moveRandomizer == 1)
+            boss.getCentre().ApplyVector(new Vector3f(-(strafeSpeed), (float) bossSpeed, 0));
+        else boss.getCentre().ApplyVector(new Vector3f((strafeSpeed), (float) -bossSpeed, 0));
 
 
         // Teleports enemy to opposite border when it hits a border
@@ -267,7 +315,7 @@ public class Model {
         }
 
         // Teleports boss back to top border, so it doesn't hang around at the bottom for way too long
-        if (boss.getCentre().getY() >= 600.0f) {
+        if (boss.getCentre().getY() >= 430.0f) {
             boss.getCentre().setY(0);
         }
     }
@@ -276,7 +324,14 @@ public class Model {
         //check to move them
         for (GameObject temp : EnemyBulletList) {
             //check to move them
-            temp.getCentre().ApplyVector(new Vector3f(0, -1.5f, 0));
+            if (getBoss().getHealth() <= 150 && getBoss().getHealth() > 80) {
+                temp.getCentre().ApplyVector(new Vector3f(0, -1.5f, 0));
+            } else if (getBoss().getHealth() <= 80) {
+                temp.getCentre().ApplyVector(new Vector3f(0, -2.3f, 0));
+            }else {
+                temp.getCentre().ApplyVector(new Vector3f(0, -1.0f, 0));
+            }
+
 
             if (temp.getCentre().getY() == 900) {
                 EnemyBulletList.remove(temp);
@@ -285,8 +340,32 @@ public class Model {
     }
 
     private void createBossBullet() {
-        EnemyBulletList.add(new GameObject("res/laserRed2.png", 9, 33, new Point3f(boss.getCentre().getX(), boss.getCentre().getY(), 0.0f)));
+        EnemyBulletList.add(new GameObject("res/laserPurple.png", 10, 35, new Point3f(boss.getCentre().getX(), boss.getCentre().getY(), 0.0f)));
+
+        if (getBoss().getHealth() <= 180) {
+            EnemyBulletList.add(new GameObject("res/laserPurple.png", 10, 35, new Point3f(boss.getCentre().getX() + 100, boss.getCentre().getY(), 0.0f)));
+        }
+
         SoundEffect sfx = new SoundEffect("sfx/sfx_laser2.wav");
+
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                int bossMove = (Math.random() <= 0.5) ? 1 : 2;
+                if (bossMove == 1) {
+                    for (int i = 0; i < 3; i++) {
+                        EnemyBulletList.add(new GameObject("res/laserPurple2.png", 10, 40, new Point3f(boss.getCentre().getX(), boss.getCentre().getY(), 0.0f)));
+                        EnemyBulletList.add(new GameObject("res/laserPurple2.png", 10, 40, new Point3f(boss.getCentre().getX() + 50, boss.getCentre().getY(), 0.0f)));
+                        EnemyBulletList.add(new GameObject("res/laserPurple2.png", 10, 40, new Point3f(boss.getCentre().getX() + 100, boss.getCentre().getY(), 0.0f)));
+                        sfx.playSFX();
+                    }
+                }
+                timer.cancel();
+                timer.purge();
+            }
+        };
+        timer.schedule(task, 1000, 500);
         sfx.playSFX();
     }
 
@@ -295,21 +374,17 @@ public class Model {
         float strafeSpeed;
 
         // Speed at which enemies will strafe (move to a side). Speeds up as score increases.
-        if (getScore() >= 15 && getScore() < 45) {
+        if (getBossArrival() <= 120 && getBossArrival() > 60) {
             strafeSpeed = 0.35f;
-        } else if (getScore() >= 45 && getScore() <= 70) {
-            strafeSpeed = 0.42f;
-        } else if (getScore() > 70) {
+        } else if (getBossArrival() <= 60 && getBossArrival() > 0) {
             strafeSpeed = 0.5f;
-        }else strafeSpeed = 0.5f;
+        } else strafeSpeed = 0.35f;
 
         for (Enemy temp : EnemiesList) {
             // Move enemy
-            if (timeElapse % 2 == 0) {
+            if (moveRandomizer == 1)
                 temp.getCentre().ApplyVector(new Vector3f(-(strafeSpeed), (float) -0.15, 0));
-            } else {
-                temp.getCentre().ApplyVector(new Vector3f((strafeSpeed), (float) -0.15, 0));
-            }
+            else temp.getCentre().ApplyVector(new Vector3f((strafeSpeed), (float) -0.15, 0));
 
             // Teleports enemy to opposite border when it hits a border
             if (temp.getCentre().getX() == 0.0f) {
@@ -337,23 +412,16 @@ public class Model {
         int min = 1;
         int rand = random.nextInt(max - min + 1) + min;
 
-        String texture = "res/enemy_ships/enemyBlack" + rand + ".png";
+        String texture;
+        if (getBossArrival() <= 120 && getBossArrival() > 60) {
+            texture = "res/enemy_ships/enemyGreen" + rand + ".png";
+        } else if (getBossArrival() <= 60 && getBossArrival() > 0) {
+            texture = "res/enemy_ships/enemyOrange" + rand + ".png";
+        } else texture = "res/enemy_ships/enemyBlack" + rand + ".png";
+
         EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 2, 1));
         if (rand > 3) {
             EnemiesList.add(new Enemy(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0), 2, 1));
-        }
-    }
-
-    private void createHazard() {
-        Random random = new Random();
-        int max = 5;
-        int min = 1;
-        int rand = random.nextInt(max - min + 1) + min;
-
-        String texture = "res/meteors/meteor_" + rand + ".png";
-        HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
-        if (rand > 3) {
-            HazardList.add(new GameObject(texture, 60, 45, new Point3f(((float) Math.random() * 1000), 0, 0)));
         }
     }
 
@@ -372,6 +440,14 @@ public class Model {
         }
     }
 
+    private void createEnemyBullet() {
+        Random random = new Random();
+        Enemy enemy = EnemiesList.get(random.nextInt(EnemiesList.size()));
+        EnemyBulletList.add(new GameObject("res/laserRed.png", 9, 33, new Point3f(enemy.getCentre().getX(), enemy.getCentre().getY(), 0.0f)));
+        SoundEffect sfx = new SoundEffect("sfx/sfx_laser2.wav");
+        sfx.playSFX();
+    }
+
     private void playerLogic() {
         if (!Player.isDead()) {
             gLogic.playerLogic(this, Player, controller, BulletList, "res/laserGreen.png");
@@ -382,14 +458,6 @@ public class Model {
             gLogic.playerLogic(this, Player2, controller2, BulletList, "res/laserBlue.png");
             gLogic.playerBulletLogic(BulletList, Player2);
         }
-    }
-
-    private void CreateEnemyBullet() {
-        Random random = new Random();
-        Enemy enemy = EnemiesList.get(random.nextInt(EnemiesList.size()));
-        EnemyBulletList.add(new GameObject("res/laserRed.png", 9, 33, new Point3f(enemy.getCentre().getX(), enemy.getCentre().getY(), 0.0f)));
-        SoundEffect sfx = new SoundEffect("sfx/sfx_laser2.wav");
-        sfx.playSFX();
     }
 
     public Player getPlayer() {

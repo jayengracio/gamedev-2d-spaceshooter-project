@@ -75,6 +75,7 @@ public class ModelPlayerLogic {
                         }
                     };
                     timer.schedule(damage, 300, 1000);
+                    EnemyBulletList.remove(Bullet);
                 }
             }
         }
@@ -121,8 +122,6 @@ public class ModelPlayerLogic {
         }
 
         if (model.getScore() == 10) {
-            //Point3f pos = Player.getCentre();
-            //Player = new Player("res/playerShip1_agile.png", 75, 50, pos, 8, 2, 20);
             Player.setUpgradeLevel(2);
         }
 
