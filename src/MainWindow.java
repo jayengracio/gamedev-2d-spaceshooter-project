@@ -43,6 +43,7 @@ public class MainWindow {
     private static final JLabel scoreCount = new JLabel("Score: ");
     private static final JPanel timePanel = new JPanel();
     private static final JLabel time = new JLabel();
+    private static final JLabel ko = new JLabel("Game Over!");
 
     private static final JPanel player1AmmoPanel = new JPanel();
     private static final JPanel player1LifePanel = new JPanel();
@@ -132,7 +133,11 @@ public class MainWindow {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } else {
+                } else if(gameWorld.getBoss().isDefeated()) {
+                    ko.setText("Victory!\n Score: " + gameWorld.getScore());
+                    gameOver.setVisible(true);
+                    gameWorld.setGameStart(false);
+                }else {
                     gameLoop();
                 }
             }
@@ -248,10 +253,10 @@ public class MainWindow {
         gameOver.setVisible(false);
         gameOver.setBounds(250, 250, 500, 500);
         gameOver.setBackground(Color.black);
-        JLabel ko = new JLabel("Game Over!");
         ko.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         ko.setForeground(Color.white);
         ko.setHorizontalAlignment(JLabel.CENTER);
+        ko.setText("Game Over!\n Score: " + gameWorld.getScore());
         gameOver.add(ko);
     }
 
@@ -276,7 +281,7 @@ public class MainWindow {
         //score update
         //frame.setTitle("Score =  " + gameWorld.getScore() + " " + "Ammo = " + gameWorld.getPlayer().getAmmo());
         scoreCount.setText("Score: " + gameWorld.getScore());
-        time.setText(" " + gameWorld.getElapsedTime());
+        time.setText(" " + gameWorld.getBossArrival());
 
         player1LifeCount.setText(" " + gameWorld.getPlayer().getLives());
         player2LifeCount.setText(" " + gameWorld.getPlayer2().getLives());
@@ -304,7 +309,6 @@ public class MainWindow {
 
         if (gameWorld.getPlayer2().isDead()) {
             player2LifeCount.setForeground(Color.red);
-            player2LifeCount.setText("DEAD");
         }
     }
 }

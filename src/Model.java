@@ -1,3 +1,4 @@
+import entity.Boss;
 import entity.Enemy;
 import entity.Player;
 import util.*;
@@ -34,6 +35,7 @@ SOFTWARE.
 public class Model {
     private Player Player;
     private Player Player2;
+    private Boss boss = new Boss();
     private final Controller controller = Controller.getInstance();
     private final Controller2 controller2 = Controller2.getInstance();
     private final CopyOnWriteArrayList<Enemy> EnemiesList = new CopyOnWriteArrayList<>();
@@ -41,12 +43,15 @@ public class Model {
     private final CopyOnWriteArrayList<GameObject> EnemyBulletList = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<GameObject> HazardList = new CopyOnWriteArrayList<>();
     private final long createdMillis = System.currentTimeMillis();
-    private long elapsedTime;
     private final ModelPlayerLogic gLogic = new ModelPlayerLogic();
     private int Score = 0;
     boolean gameStart = true;
     boolean multiplayerMode = false;
-    int bossArrival = 180;
+    boolean clear = false;
+    boolean startBoss = false;
+    int x;
+    double acceleration;
+    int bossArrival = 5;
 
     public Model() {
         // Setup game world
@@ -68,12 +73,25 @@ public class Model {
             @Override
             public void run() {
                 if (gameStart && EnemiesList.size() > 0) {
-                    CreateEnemyBullet();
+                    if (bossArrival == 0) {
+                        enemyFire.cancel();
+                        enemyFire.purge();
+                    } else if (getScore() > 15 && getScore() <= 40) {
+                        CreateEnemyBullet();
+                        CreateEnemyBullet();
+                    } else if (getScore() > 40) {
+                        CreateEnemyBullet();
+                        CreateEnemyBullet();
+                        CreateEnemyBullet();
+                    } else {
+                        CreateEnemyBullet();
+                    }
                 }
             }
         };
         enemyFire.schedule(fireTask, 2000, 1300);
 
+        // Timer for boss arrival
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
@@ -89,7 +107,7 @@ public class Model {
 
     // This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.
     public void Logic() {
-        if (isGameStart()) {
+        if (isGameStart() && bossArrival != 0) {
             // Player logic. This includes collision and player bullet detection
             playerLogic();
             // Enemy logic
@@ -100,8 +118,32 @@ public class Model {
             gameLogic();
             // Hazard logic
             hazardLogic();
+        } else {
+            // Boss time :TrollDespair:
+            // uses clear variable, so there is only 1 iteration.
+            if (!clear) {
+                EnemiesList.clear();
+                HazardList.clear();
+                EnemyBulletList.clear();
+                BulletList.clear();
 
-            elapsedTime = bossArrival;
+                boss = new Boss("res/enemy_ships/enemyBlue2.png", 100, 85, new Point3f(500, 200, 0), 200, 3);
+                Timer enemyFire = new Timer();
+                TimerTask fireTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        if (gameStart)
+                        createBossBullet();
+                    }
+                };
+                enemyFire.schedule(fireTask, 2000, 1000);
+                clear = true;
+            }
+
+            playerLogic();
+            bossLogic();
+            bossBulletLogic();
+            gameLogic();
         }
     }
 
@@ -128,6 +170,30 @@ public class Model {
                         SoundEffect sfx = new SoundEffect("sfx/sfx_twoTone.wav");
                         sfx.playSFX();
                         Score++;
+                    }
+                }
+            }
+        }
+
+        if (getBossArrival() == 0) {
+            for (GameObject Bullet : BulletList) {
+                if (Math.abs(boss.getCentre().getX() - Bullet.getCentre().getX()) < boss.getWidth()
+                        && Math.abs(boss.getCentre().getY() - Bullet.getCentre().getY()) < boss.getHeight()) {
+                    BulletList.remove(Bullet);
+                    boss.setHealth(boss.getHealth() - 1);
+
+                    // show visual damage
+                    String textureId = boss.getTexture().substring(boss.getTexture().length() - 5);
+                    boss.setTexture("res/enemy_ships/enemyRed" + textureId);
+                    Timer timer = new Timer();
+                    ShowDamage damage = new ShowDamage(boss, "res/enemy_ships/enemyBlue" + textureId);
+                    timer.schedule(damage, 200, 200);
+
+                    if (boss.getHealth() == 0) {
+                        SoundEffect sfx = new SoundEffect("sfx/sfx_twoTone.wav");
+                        sfx.playSFX();
+                        Score += 25;
+                        boss.setDefeated(true);
                     }
                 }
             }
@@ -160,8 +226,7 @@ public class Model {
             // Move enemies
             temp.getCentre().ApplyVector(new Vector3f(0, (float) -0.5, 0));
 
-            //see if they get to the top of the screen ( remember 0 is the top
-            // current boundary need to pass value to model
+            // removes object when it reaches the bottom
             if (temp.getCentre().getY() == 900.0f) {
                 HazardList.remove(temp);
             }
@@ -172,14 +237,78 @@ public class Model {
         }
     }
 
+    private void bossLogic() {
+        Random rand = new Random();
+        float strafeSpeed = 0.7f;
+
+        if (!startBoss) {
+            Timer timer = new Timer();
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    acceleration = -0.8 + rand.nextDouble();
+                    x = (Math.random() <= 0.5) ? 1 : 2;
+                }
+            };
+            timer.schedule(task, 3000, 800);
+            startBoss = true;
+        }
+
+        if (x == 1)
+            boss.getCentre().ApplyVector(new Vector3f(-(strafeSpeed), (float) acceleration, 0));
+        else boss.getCentre().ApplyVector(new Vector3f((strafeSpeed), (float) -acceleration, 0));
+
+
+        // Teleports enemy to opposite border when it hits a border
+        if (boss.getCentre().getX() == 0.0f) {
+            boss.getCentre().setX(900);
+        } else if (boss.getCentre().getX() == 900.0f) {
+            boss.getCentre().setX(0);
+        }
+
+        // Teleports boss back to top border, so it doesn't hang around at the bottom for way too long
+        if (boss.getCentre().getY() >= 600.0f) {
+            boss.getCentre().setY(0);
+        }
+    }
+
+    private void bossBulletLogic() {
+        //check to move them
+        for (GameObject temp : EnemyBulletList) {
+            //check to move them
+            temp.getCentre().ApplyVector(new Vector3f(0, -1.5f, 0));
+
+            if (temp.getCentre().getY() == 900) {
+                EnemyBulletList.remove(temp);
+            }
+        }
+    }
+
+    private void createBossBullet() {
+        EnemyBulletList.add(new GameObject("res/laserRed2.png", 9, 33, new Point3f(boss.getCentre().getX(), boss.getCentre().getY(), 0.0f)));
+        SoundEffect sfx = new SoundEffect("sfx/sfx_laser2.wav");
+        sfx.playSFX();
+    }
+
     private void enemyLogic() {
         long timeElapse = (System.currentTimeMillis() - createdMillis) / 3000;
+        float strafeSpeed;
+
+        // Speed at which enemies will strafe (move to a side). Speeds up as score increases.
+        if (getScore() >= 15 && getScore() < 45) {
+            strafeSpeed = 0.35f;
+        } else if (getScore() >= 45 && getScore() <= 70) {
+            strafeSpeed = 0.42f;
+        } else if (getScore() > 70) {
+            strafeSpeed = 0.5f;
+        }else strafeSpeed = 0.5f;
+
         for (Enemy temp : EnemiesList) {
             // Move enemy
             if (timeElapse % 2 == 0) {
-                temp.getCentre().ApplyVector(new Vector3f((float) -0.3, (float) -0.2, 0));
+                temp.getCentre().ApplyVector(new Vector3f(-(strafeSpeed), (float) -0.15, 0));
             } else {
-                temp.getCentre().ApplyVector(new Vector3f((float) 0.3, (float) -0.2, 0));
+                temp.getCentre().ApplyVector(new Vector3f((strafeSpeed), (float) -0.15, 0));
             }
 
             // Teleports enemy to opposite border when it hits a border
@@ -307,8 +436,12 @@ public class Model {
         this.multiplayerMode = multiplayerMode;
     }
 
-    public long getElapsedTime() {
-        return elapsedTime;
+    public long getBossArrival() {
+        return bossArrival;
+    }
+
+    public Boss getBoss() {
+        return boss;
     }
 }
 

@@ -1,3 +1,5 @@
+import util.GameObject;
+
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.LayoutManager;
@@ -77,6 +79,8 @@ public class Viewer extends JPanel {
         int height2 = gameWorld.getPlayer2().getHeight();
         String texture2 = gameWorld.getPlayer2().getTexture();
 
+        GameObject boss = gameWorld.getBoss();
+
         // Draw background
         drawBackground(g);
 
@@ -98,10 +102,14 @@ public class Viewer extends JPanel {
             drawEnemies((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g);
         });
 
+        if (gameWorld.getBossArrival() == 0) {
+            drawEnemies((int) boss.getCentre().getX(), (int) boss.getCentre().getY(), (int) boss.getWidth(), (int) boss.getHeight(), boss.getTexture(), g);
+        }
+
         //Draw Enemies
         gameWorld.getHazards().forEach((temp) -> {
+            if (!gameWorld.getHazards().isEmpty())
             drawHazards((int) temp.getCentre().getX(), (int) temp.getCentre().getY(), (int) temp.getWidth(), (int) temp.getHeight(), temp.getTexture(), g);
-
         });
 
         //Draw Enemy bullets
@@ -139,7 +147,10 @@ public class Viewer extends JPanel {
     }
 
     private void drawBackground(Graphics g) {
-        File TextureToLoad = new File("res/Background2.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
+        File TextureToLoad;
+        if (gameWorld.getBossArrival() == 0) {
+            TextureToLoad = new File("res/Background2.png");
+        } else TextureToLoad = new File("res/Background.png");  //should work okay on OSX and Linux but check if you have issues depending your eclipse install or if your running this without an IDE
         try {
             Image myImage = ImageIO.read(TextureToLoad);
             g.drawImage(myImage, 0, 0, 1000, 1000, 0, 0, 1000, 1000, null);
