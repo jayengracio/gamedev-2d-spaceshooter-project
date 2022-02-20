@@ -48,13 +48,13 @@ public class Model {
     private final long createdMillis = System.currentTimeMillis();
     private final PlayerLogic gLogic = new PlayerLogic();
     private int Score = 0;
-    private boolean gameStart = true;
+    private boolean gameStart = false;
     private boolean multiplayerMode = false;
     private boolean clear = false;
     private boolean startBoss = false;
     private int moveRandomizer;
     private double bossSpeed;
-    private int bossArrival = 180;
+    private int bossArrival = 10;
 
     public Model() {
         // Setup game world
@@ -100,13 +100,17 @@ public class Model {
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
+                if (gameStart) {
+                    --bossArrival;
+                }
+
                 if (bossArrival == 0) {
                     timer.cancel();
                     timer.purge();
-                } else --bossArrival;
+                }
             }
         };
-        timer.schedule(task, 2000, 900);
+        timer.schedule(task, 2000, 1000);
     }
 
     // This is the heart of the game, where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.

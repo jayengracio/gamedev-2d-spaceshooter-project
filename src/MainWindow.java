@@ -120,6 +120,7 @@ public class MainWindow {
             }
 
             if (startGame) {
+                gameWorld.setGameStart(true);
                 if (gameWorld.getPlayer().getLives() == 0 && !gameWorld.isMultiplayerMode()) {
                     gameOver.setVisible(true);
                     gameWorld.setGameStart(false);
