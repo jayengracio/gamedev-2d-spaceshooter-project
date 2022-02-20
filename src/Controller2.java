@@ -65,6 +65,9 @@ public class Controller2 extends Controller {
             case '/':
                 setKeySpacePressed(true);
                 break;
+            case 'm':
+                setKeyCPressed(true);
+                break;
             default:
                 //System.out.println("Controller test:  Unknown key pressed");
                 break;
@@ -89,6 +92,9 @@ public class Controller2 extends Controller {
                 break;
             case '/':
                 setKeySpacePressed(false);
+                break;
+            case 'm':
+                setKeyCPressed(false);
                 break;
             default:
                 //System.out.println("Controller test:  Unknown key pressed");

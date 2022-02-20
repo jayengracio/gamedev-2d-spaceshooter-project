@@ -46,7 +46,7 @@ public class Model {
     private final CopyOnWriteArrayList<GameObject> EnemyBulletList = new CopyOnWriteArrayList<>();
     private final CopyOnWriteArrayList<GameObject> HazardList = new CopyOnWriteArrayList<>();
     private final long createdMillis = System.currentTimeMillis();
-    private final ModelPlayerLogic gLogic = new ModelPlayerLogic();
+    private final PlayerLogic gLogic = new PlayerLogic();
     private int Score = 0;
     private boolean gameStart = true;
     private boolean multiplayerMode = false;
@@ -70,7 +70,7 @@ public class Model {
         Player = new Player("res/playerShip1.png", 67, 50, new Point3f(500, 500, 0), 15, 6);
         Player2 = new Player("res/playerShip2.png", 67, 50, new Point3f(200, 500, 0), 15, 6);
 
-        // To stop the timer being started twice, I created another constructor with a redundant argument
+        // Enemy fire timer and scheduler
         Timer enemyFire = new Timer();
         TimerTask fireTask = new TimerTask() {
             @Override
@@ -95,7 +95,7 @@ public class Model {
         };
         enemyFire.schedule(fireTask, 2000, 1300);
 
-        // Timer for boss arrival
+        // Timer for boss arrival. Gets purged when it bossArrival reaches 0
         Timer timer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
@@ -109,22 +109,18 @@ public class Model {
         timer.schedule(task, 2000, 900);
     }
 
-    // This is the heart of the game , where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.
+    // This is the heart of the game, where the model takes in all the inputs ,decides the outcomes and then changes the model accordingly.
     public void Logic() {
+        // Set up all entity logic
         if (isGameStart() && bossArrival != 0) {
-            // Player logic. This includes collision and player bullet detection
             playerLogic();
-            // Enemy logic
             enemyLogic();
-            // Enemy bullet logic
             enemyBulletLogic();
-            // Generic interactions between objects
             gameLogic();
-            // Hazard logic
             hazardLogic();
         } else {
-            // Boss time :TrollDespair:
-            // uses clear variable, so there is only 1 iteration.
+            // Start boss level
+            // uses the clear variable for setup to only run for 1 iteration.
             if (!clear) {
                 EnemiesList.clear();
                 HazardList.clear();

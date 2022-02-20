@@ -5,8 +5,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class ModelPlayerLogic {
+public class PlayerLogic {
     private int i = 0;
+    private int lvl, lvl2, lvl3  = 0;
+    private int temp;
+    int x = 0;
 
     // Hazard/environmental objects collision against a player
     public void hazardCollision(CopyOnWriteArrayList<GameObject> HazardList, Player Player) {
@@ -81,9 +84,10 @@ public class ModelPlayerLogic {
         }
     }
 
+    // Control logic for player
     public void playerLogic(Model model, Player Player, Controller controller, CopyOnWriteArrayList<GameObject> BulletList, String bulletTexture) {
         // smoother animation is possible if we make a target position  // done but may try to change things for students
-        //check for movement and if you fired a bullet
+        // check for movement and if you fired a bullet
         if (controller.isKeyAPressed()) {
             Player.getCentre().ApplyVector(new Vector3f((float) -1.3, 0, 0));
         }
@@ -100,6 +104,7 @@ public class ModelPlayerLogic {
             Player.getCentre().ApplyVector(new Vector3f(0, (float) -1.3, 0));
         }
 
+        // Fire bullet
         if (controller.isKeySpacePressed()) {
             if (Player.getAmmo() == 0) {
                 Player.setAmmo(-1);
@@ -115,14 +120,72 @@ public class ModelPlayerLogic {
             controller.setKeySpacePressed(false);
         }
 
+        if (controller.isKeyCPressed() && Player.getUpgradeLevel() >= 3 && temp == 0) {
+            temp = 1;
+            SoundEffect sfx = new SoundEffect("sfx/sfx_shieldUp.wav");
+            sfx.playSFX();
+
+            Player.setInvincible(true);
+            Player.setTexture("res/player_shieldUp.png");
+
+            Timer timer = new Timer();
+            TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    System.out.println(++x);
+
+                    if (x == 25) {
+                        temp = 0;
+                        x = 0;
+                        timer.cancel();
+                        timer.purge();
+                    } else if (x == 5) {
+                        Player.setTexture(Player.getDefaultTexture());
+                        Player.setInvincible(false);
+                    }
+                }
+            };
+            timer.schedule(task, 0, 1000);
+        }
+
         if (Player.getCentre().getX() == 0.0f) {
             Player.getCentre().setX(900);
         } else if (Player.getCentre().getX() == 900.0f) {
             Player.getCentre().setX(0);
         }
 
-        if (model.getScore() == 10) {
+        if (model.getScore() == 5) {
             Player.setUpgradeLevel(2);
+        }
+
+        // Player upgrades when reaching certain score level
+        switch(model.getScore()) {
+            case 5:
+                Player.setUpgradeLevel(2);
+                if (lvl == 0) {
+                    SoundEffect sfx = new SoundEffect("sfx/level_up.wav");
+                    sfx.playSFX();
+                    lvl = 1;
+                }
+                break;
+            case 7:
+                Player.setUpgradeLevel(3);
+                if (lvl2 == 0) {
+                    SoundEffect sfx = new SoundEffect("sfx/level_up.wav");
+                    sfx.playSFX();
+                    lvl2 = 1;
+                }
+                break;
+            case 9:
+                Player.setUpgradeLevel(4);
+                if (lvl3 == 0) {
+                    SoundEffect sfx = new SoundEffect("sfx/level_up.wav");
+                    sfx.playSFX();
+                    lvl3 = 1;
+                }
+                break;
+            default:
+                // nothing
         }
 
         if (Player.getLives() <= 0) {
@@ -136,7 +199,7 @@ public class ModelPlayerLogic {
         for (GameObject temp : BulletList) {
 
             //check to move them
-            if (Player.getUpgradeLevel() == 2) {
+            if (Player.getUpgradeLevel() >= 2) {
                 temp.getCentre().ApplyVector(new Vector3f(0, 3, 0));
             } else temp.getCentre().ApplyVector(new Vector3f(0, 2.2f, 0));
 
@@ -152,7 +215,7 @@ public class ModelPlayerLogic {
     private void CreateBullet(CopyOnWriteArrayList<GameObject> BulletList, Player Player, String texture) {
         BulletList.add(new GameObject(texture, 9, 33, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
 
-        if (Player.getUpgradeLevel() == 2)
+        if (Player.getUpgradeLevel() >= 2)
             BulletList.add(new GameObject(texture, 9, 33, new Point3f(Player.getCentre().getX() + 60, Player.getCentre().getY(), 0.0f)));
 
         SoundEffect sfx = new SoundEffect("sfx/sfx_laser1.wav");
