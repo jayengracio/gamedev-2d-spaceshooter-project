@@ -54,7 +54,7 @@ public class Model {
     private boolean startBoss = false;
     private int moveRandomizer;
     private double bossSpeed;
-    private int bossArrival = 10;
+    private int bossArrival = 180;
 
     public Model() {
         // Setup game world
