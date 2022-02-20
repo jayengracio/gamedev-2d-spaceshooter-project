@@ -34,6 +34,9 @@ public class Controller2 extends Controller {
     private static boolean KeyDPressed = false;
     private static boolean KeyWPressed = false;
     private static boolean KeySpacePressed = false;
+    private static boolean KeyCPressed = false;
+    private int shieldTime = 0;
+    private int temp = 0;
 
     public Controller2() {
     }
@@ -65,7 +68,7 @@ public class Controller2 extends Controller {
             case '/':
                 setKeySpacePressed(true);
                 break;
-            case 'm':
+            case '.':
                 setKeyCPressed(true);
                 break;
             default:
@@ -93,7 +96,7 @@ public class Controller2 extends Controller {
             case '/':
                 setKeySpacePressed(false);
                 break;
-            case 'm':
+            case '.':
                 setKeyCPressed(false);
                 break;
             default:
@@ -141,6 +144,30 @@ public class Controller2 extends Controller {
 
     public void setKeySpacePressed(boolean keySpacePressed) {
         KeySpacePressed = keySpacePressed;
+    }
+
+    public boolean isKeyCPressed() {
+        return KeyCPressed;
+    }
+
+    public void setKeyCPressed(boolean keyCPressed) {
+        KeyCPressed = keyCPressed;
+    }
+
+    public int getShieldTime() {
+        return shieldTime;
+    }
+
+    public void setShieldTime(int shieldTime) {
+        this.shieldTime = shieldTime;
+    }
+
+    public int getTemp() {
+        return temp;
+    }
+
+    public void setTemp(int temp) {
+        this.temp = temp;
     }
 
 }

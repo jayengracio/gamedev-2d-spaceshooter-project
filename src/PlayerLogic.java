@@ -8,8 +8,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class PlayerLogic {
     private int i = 0;
     private int lvl, lvl2, lvl3  = 0;
-    private int temp;
-    int x = 0;
 
     // Hazard/environmental objects collision against a player
     public void hazardCollision(CopyOnWriteArrayList<GameObject> HazardList, Player Player) {
@@ -120,8 +118,9 @@ public class PlayerLogic {
             controller.setKeySpacePressed(false);
         }
 
-        if (controller.isKeyCPressed() && Player.getUpgradeLevel() >= 3 && temp == 0) {
-            temp = 1;
+        // Enable shield
+        if (controller.isKeyCPressed() && Player.getUpgradeLevel() >= 2 && controller.getTemp() == 0) {
+            controller.setTemp(1);
             SoundEffect sfx = new SoundEffect("sfx/sfx_shieldUp.wav");
             sfx.playSFX();
 
@@ -132,16 +131,19 @@ public class PlayerLogic {
             TimerTask task = new TimerTask() {
                 @Override
                 public void run() {
-                    System.out.println(++x);
-
-                    if (x == 25) {
-                        temp = 0;
-                        x = 0;
+                    Player.setShieldCd(true);
+                    controller.setShieldTime(controller.getShieldTime() + 1);
+                    if (controller.getShieldTime() == 20) {
+                        controller.setTemp(0);
+                        controller.setShieldTime(0);
+                        Player.setShieldCd(false);
                         timer.cancel();
                         timer.purge();
-                    } else if (x == 5) {
+                    } else if (controller.getShieldTime() == 5) {
                         Player.setTexture(Player.getDefaultTexture());
                         Player.setInvincible(false);
+                        SoundEffect sfx = new SoundEffect("sfx/sfx_shieldDown.wav");
+                        sfx.playSFX();
                     }
                 }
             };
@@ -154,13 +156,9 @@ public class PlayerLogic {
             Player.getCentre().setX(0);
         }
 
-        if (model.getScore() == 5) {
-            Player.setUpgradeLevel(2);
-        }
-
         // Player upgrades when reaching certain score level
         switch(model.getScore()) {
-            case 5:
+            case 30:
                 Player.setUpgradeLevel(2);
                 if (lvl == 0) {
                     SoundEffect sfx = new SoundEffect("sfx/level_up.wav");
@@ -168,7 +166,7 @@ public class PlayerLogic {
                     lvl = 1;
                 }
                 break;
-            case 7:
+            case 70:
                 Player.setUpgradeLevel(3);
                 if (lvl2 == 0) {
                     SoundEffect sfx = new SoundEffect("sfx/level_up.wav");
@@ -176,7 +174,7 @@ public class PlayerLogic {
                     lvl2 = 1;
                 }
                 break;
-            case 9:
+            case 130:
                 Player.setUpgradeLevel(4);
                 if (lvl3 == 0) {
                     SoundEffect sfx = new SoundEffect("sfx/level_up.wav");
@@ -199,8 +197,8 @@ public class PlayerLogic {
         for (GameObject temp : BulletList) {
 
             //check to move them
-            if (Player.getUpgradeLevel() >= 2) {
-                temp.getCentre().ApplyVector(new Vector3f(0, 3, 0));
+            if (Player.getUpgradeLevel() >= 3) {
+                temp.getCentre().ApplyVector(new Vector3f(0, 3.2f, 0));
             } else temp.getCentre().ApplyVector(new Vector3f(0, 2.2f, 0));
 
             //see if they hit anything
@@ -215,7 +213,7 @@ public class PlayerLogic {
     private void CreateBullet(CopyOnWriteArrayList<GameObject> BulletList, Player Player, String texture) {
         BulletList.add(new GameObject(texture, 9, 33, new Point3f(Player.getCentre().getX(), Player.getCentre().getY(), 0.0f)));
 
-        if (Player.getUpgradeLevel() >= 2)
+        if (Player.getUpgradeLevel() >= 3)
             BulletList.add(new GameObject(texture, 9, 33, new Point3f(Player.getCentre().getX() + 60, Player.getCentre().getY(), 0.0f)));
 
         SoundEffect sfx = new SoundEffect("sfx/sfx_laser1.wav");

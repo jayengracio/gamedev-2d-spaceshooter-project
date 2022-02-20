@@ -1,6 +1,22 @@
 # GameDev_Assignment1
 COMP30540 Assignment 1 2022
 
+Player 1 Controls:
+w - forward
+a - left
+s - down
+d - right
+space - fire
+c - shield
+
+Player 2 Controls:
+up arrow - forward
+left arrow  - left
+down arrow  - down
+right arrow  - right
+/ - fire
+. - shield
+
 Art and sound effects by Kenney:
 https://opengameart.org/content/space-shooter-redux
 

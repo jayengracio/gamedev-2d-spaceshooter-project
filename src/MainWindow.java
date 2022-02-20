@@ -49,11 +49,15 @@ public class MainWindow {
     private static final JPanel player1LifePanel = new JPanel();
     private static final JLabel player1AmmoCount = new JLabel(new ImageIcon("res/ammo_icon.png"));
     private static final JLabel player1LifeCount = new JLabel(new ImageIcon("res/playerLife1_red.png"));
+    private static final JPanel player1shieldPanel = new JPanel();
+    private static final JLabel player1shield = new JLabel(new ImageIcon("res/shield.png"));
 
     private static final JPanel player2AmmoPanel = new JPanel();
     private static final JPanel player2LifePanel = new JPanel();
     private static final JLabel player2AmmoCount = new JLabel(new ImageIcon("res/ammo_icon.png"));
     private static final JLabel player2LifeCount = new JLabel(new ImageIcon("res/playerLife1_blue.png"));
+    private static final JPanel player2shieldPanel = new JPanel();
+    private static final JLabel player2shield = new JLabel(new ImageIcon("res/shield.png"));
 
     private static final JPanel gameOver = new JPanel();
     private static final int TargetFPS = 300;
@@ -71,8 +75,10 @@ public class MainWindow {
         frame.add(bossPanel);
         frame.add(player1AmmoPanel);
         frame.add(player1LifePanel);
+        frame.add(player1shieldPanel);
         frame.add(player2AmmoPanel);
         frame.add(player2LifePanel);
+        frame.add(player2shieldPanel);
         frame.add(gameOver);
         frame.add(canvas);
 
@@ -195,14 +201,14 @@ public class MainWindow {
 
     private void setupUI() {
         scorePanel.setVisible(false);
-        scorePanel.setBounds(450, 0, 115, 35);
+        scorePanel.setBounds(500, 0, 115, 35);
         scorePanel.setBackground(Color.black);
         scoreCount.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         scoreCount.setForeground(Color.white);
         scorePanel.add(scoreCount);
 
         bossPanel.setVisible(false);
-        bossPanel.setBounds(325, 0, 115, 35);
+        bossPanel.setBounds(380, 0, 115, 35);
         bossPanel.setBackground(Color.black);
         bossCounter.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         bossCounter.setForeground(Color.white);
@@ -215,32 +221,53 @@ public class MainWindow {
         bossCounter.setIcon(newImgIcon);
 
         player1LifePanel.setVisible(false);
-        player1LifePanel.setBounds(0, 0, 110, 35);
+        player1LifePanel.setBounds(0, 0, 90, 35);
         player1LifePanel.setBackground(Color.black);
         player1LifeCount.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         player1LifeCount.setForeground(Color.white);
         player1LifePanel.add(player1LifeCount);
 
         player1AmmoPanel.setVisible(false);
-        player1AmmoPanel.setBounds(111, 0, 110, 35);
+        player1AmmoPanel.setBounds(91, 0, 90, 35);
         player1AmmoPanel.setBackground(Color.black);
         player1AmmoCount.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         player1AmmoCount.setForeground(Color.white);
         player1AmmoPanel.add(player1AmmoCount);
 
+        player1shieldPanel.setVisible(false);
+        player1shieldPanel.setBounds(182, 0, 90, 35);
+        player1shieldPanel.setBackground(Color.black);
+        player1shield.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
+        player1shield.setForeground(Color.white);
+        player1shieldPanel.add(player1shield);
+
         player2LifePanel.setVisible(false);
-        player2LifePanel.setBounds(880, 0, 110, 35);
+        player2LifePanel.setBounds(900, 0, 90, 35);
         player2LifePanel.setBackground(Color.black);
         player2LifeCount.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         player2LifeCount.setForeground(Color.white);
         player2LifePanel.add(player2LifeCount);
 
         player2AmmoPanel.setVisible(false);
-        player2AmmoPanel.setBounds(768, 0, 110, 35);
+        player2AmmoPanel.setBounds(809, 0, 90, 35);
         player2AmmoPanel.setBackground(Color.black);
         player2AmmoCount.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         player2AmmoCount.setForeground(Color.white);
         player2AmmoPanel.add(player2AmmoCount);
+
+        player2shieldPanel.setVisible(false);
+        player2shieldPanel.setBounds(718, 0, 90, 35);
+        player2shieldPanel.setBackground(Color.black);
+        player2shield.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
+        player2shield.setForeground(Color.white);
+        player2shieldPanel.add(player2shield);
+
+        ImageIcon t2 = new ImageIcon("res/shield.png");
+        Image shieldImg = t2.getImage();
+        Image shieldIc = shieldImg.getScaledInstance(28, 26, Image.SCALE_SMOOTH);
+        ImageIcon shieldIcon = new ImageIcon(shieldIc);
+        player1shield.setIcon(shieldIcon);
+        player2shield.setIcon(shieldIcon);
 
         ImageIcon icon = new ImageIcon("res/ammo_icon.png");
         Image img = icon.getImage();
@@ -256,7 +283,6 @@ public class MainWindow {
         ko.setFont(new Font("Bahnschrift", Font.PLAIN, 20));
         ko.setForeground(Color.white);
         ko.setHorizontalAlignment(JLabel.CENTER);
-        ko.setText("Game Over!\n Score: " + gameWorld.getScore());
         gameOver.add(ko);
     }
 
@@ -277,17 +303,38 @@ public class MainWindow {
         // view update
         canvas.updateView();
 
-        // Both these calls could be setup as  a thread but we want to simplify the game logic for you.
-        //score update
-        //frame.setTitle("Score =  " + gameWorld.getScore() + " " + "Ammo = " + gameWorld.getPlayer().getAmmo());
+        // UI updates
+        ko.setText("Game Over!\n Score: " + gameWorld.getScore());
         scoreCount.setText("Score: " + gameWorld.getScore());
         if (gameWorld.getBossArrival() != 0) {
             bossCounter.setText(" " + gameWorld.getBossArrival());
         } else bossCounter.setText(" " + gameWorld.getBoss().getHealth());
 
-
         player1LifeCount.setText(" " + gameWorld.getPlayer().getLives());
         player2LifeCount.setText(" " + gameWorld.getPlayer2().getLives());
+        player1shield.setForeground(Color.red);
+        player2shield.setForeground(Color.red);
+        player1shield.setText(" CD!");
+        player2shield.setText(" CD!");
+
+        if (gameWorld.getPlayer().getUpgradeLevel() >= 2) {
+            player1shieldPanel.setVisible(true);
+
+        }
+
+        if (gameWorld.getPlayer2().getUpgradeLevel() >= 2 && gameWorld.isMultiplayerMode()) {
+            player2shieldPanel.setVisible(true);
+        }
+
+        if (!gameWorld.getPlayer().isShieldCd()) {
+            player1shield.setForeground(Color.green);
+            player1shield.setText(" R!");
+        }
+
+        if (!gameWorld.getPlayer2().isShieldCd()) {
+            player2shield.setForeground(Color.green);
+            player2shield.setText(" R!");
+        }
 
         if (gameWorld.getPlayer().getAmmo() == -1) {
             player1AmmoCount.setForeground(Color.red);

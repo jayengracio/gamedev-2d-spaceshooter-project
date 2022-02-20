@@ -10,6 +10,7 @@ public class Player extends GameObject {
     private int maxAmmo;
     private boolean invincible;
     private boolean dead = false;
+    private boolean shieldCd;
     private String defaultTexture;
 
     public Player(){}
@@ -62,16 +63,8 @@ public class Player extends GameObject {
         return maxAmmo;
     }
 
-    public void setMaxAmmo(int maxAmmo) {
-        this.maxAmmo = maxAmmo;
-    }
-
     public String getDefaultTexture() {
         return defaultTexture;
-    }
-
-    public void setDefaultTexture(String defaultTexture) {
-        this.defaultTexture = defaultTexture;
     }
 
     public boolean isDead() {
@@ -83,5 +76,13 @@ public class Player extends GameObject {
 
     public void setDead(boolean dead) {
         this.dead = dead;
+    }
+
+    public boolean isShieldCd() {
+        return shieldCd;
+    }
+
+    public void setShieldCd(boolean shieldCd) {
+        this.shieldCd = shieldCd;
     }
 }

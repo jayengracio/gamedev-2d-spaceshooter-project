@@ -35,6 +35,8 @@ public class Controller implements KeyListener {
     private static boolean KeyWPressed = false;
     private static boolean KeySpacePressed = false;
     private static boolean KeyCPressed = false;
+    private int shieldTime = 0;
+    private int temp = 0;
 
     public Controller() {
     }
@@ -154,14 +156,29 @@ public class Controller implements KeyListener {
         KeySpacePressed = keySpacePressed;
     }
 
-    public static boolean isKeyCPressed() {
+    public boolean isKeyCPressed() {
         return KeyCPressed;
     }
 
-    public static void setKeyCPressed(boolean keyCPressed) {
+    public void setKeyCPressed(boolean keyCPressed) {
         KeyCPressed = keyCPressed;
     }
 
+    public int getShieldTime() {
+        return shieldTime;
+    }
+
+    public void setShieldTime(int shieldTime) {
+        this.shieldTime = shieldTime;
+    }
+
+    public int getTemp() {
+        return temp;
+    }
+
+    public void setTemp(int temp) {
+        this.temp = temp;
+    }
 }
 
 /*
