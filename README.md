@@ -1,6 +1,8 @@
 
 # GameDev_Assignment1  
-COMP30540 Assignment 1 2022  
+COMP30540 Assignment 1 2022
+
+## Built using Java 1.8 and IntelliJ
   
 ## Player 1 Controls:  
 - w - forward  
