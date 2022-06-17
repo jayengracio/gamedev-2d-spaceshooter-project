@@ -1,6 +1,5 @@
 
-# GameDev_Assignment1  
-COMP30540 Assignment 1 2022
+# Game Development Assignment 1: 2D-Game 2022
 
 ## Built using Java 1.8 and IntelliJ
   
