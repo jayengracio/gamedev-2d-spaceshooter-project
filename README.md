@@ -1,32 +1,19 @@
+# 2D Space Shooter Game Project
 
-# Game Development Assignment 1: 2D-Game 2022
+A game development project for a college assignment using ***Java 1.8*** and ***JavaFX***.
+- Check out the video showcase [here](https://youtu.be/am5qnqyL7LM).
 
-## Built using Java 1.8 and IntelliJ
-Video Showcase: https://youtu.be/am5qnqyL7LM
-  
-## Player 1 Controls:  
-- w - forward  
-- a - left  
-- s - down  
-- d - right  
-- space - fire  
-- c - shield  
-  
-Player 2 Controls:  
-- up arrow - forward  
-- left arrow  - left  
-- down arrow  - down  
-- right arrow  - right  
-- / - fire  
-- . - shield  
-  
-Art and sound effects by Kenney:  
-https://opengameart.org/content/space-shooter-redux  
-  
-Sound effect by wobbleboxx:  
-https://opengameart.org/content/level-up-power-up-coin-get-13-sounds  
-  
-License: (Creative Commons Zero, CC0)  
-http://creativecommons.org/publicdomain/zero/1.0/  
-  
-This content is free to use in personal, educational and commercial projects.
+## Control Scheme:
+
+| Player   | Move Forward | Move Left | Move Down | Move Right | Fire | Activate Shield |
+|----------|--------------|-----------|-----------|------------|------|-----------------|
+| Player 1 | W            | A         | S         | D          | Space| C               |
+| Player 2 | Up Arrow     | Left Arrow| Down Arrow| Right Arrow| /    | .               |
+
+## Credits:
+- Art and sound effects generously provided by [Kenney](https://opengameart.org/content/space-shooter-redux).
+- Additional sound effects by [wobbleboxx](https://opengameart.org/content/level-up-power-up-coin-get-13-sounds).
+
+## License:
+
+This project is licensed under [Creative Commons Zero (CC0)](http://creativecommons.org/publicdomain/zero/1.0/), allowing unrestricted use in personal, educational, and commercial projects.
